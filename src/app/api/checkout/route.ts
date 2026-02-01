@@ -97,6 +97,9 @@ export async function POST(request: NextRequest) {
     }
     
     // Create Stripe checkout session
+    // Convert price from dollars to cents for Stripe
+    const priceInCents = Math.round(memory.price * 100)
+    
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -107,7 +110,7 @@ export async function POST(request: NextRequest) {
               name: memory.title,
               description: `AI Memory - ${memory.platform}`,
             },
-            unit_amount: memory.price, // Price in cents
+            unit_amount: priceInCents,
           },
           quantity: 1,
         },
