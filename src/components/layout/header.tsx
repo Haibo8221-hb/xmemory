@@ -5,10 +5,13 @@ import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
+import { useTranslation } from '@/lib/i18n/context'
+import { LanguageSwitcher } from '@/components/language-switcher'
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null)
   const supabase = createClient()
+  const { t } = useTranslation()
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -36,33 +39,34 @@ export function Header() {
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/explore" className="text-gray-600 hover:text-gray-900">
-              浏览市场
+              {t('nav.explore')}
             </Link>
             {user && (
               <Link href="/upload" className="text-gray-600 hover:text-gray-900">
-                上传Memory
+                {t('nav.upload')}
               </Link>
             )}
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
           {user ? (
             <>
               <Link href="/dashboard">
-                <Button variant="ghost">我的账户</Button>
+                <Button variant="ghost">{t('nav.dashboard')}</Button>
               </Link>
               <Button variant="outline" onClick={handleSignOut}>
-                退出
+                {t('nav.logout')}
               </Button>
             </>
           ) : (
             <>
               <Link href="/auth/login">
-                <Button variant="ghost">登录</Button>
+                <Button variant="ghost">{t('nav.login')}</Button>
               </Link>
               <Link href="/auth/register">
-                <Button>注册</Button>
+                <Button>{t('nav.register')}</Button>
               </Link>
             </>
           )}

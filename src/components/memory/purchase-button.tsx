@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Loader2, Download } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { useTranslation } from '@/lib/i18n/context'
 
 interface PurchaseButtonProps {
   memoryId: string
@@ -18,6 +19,7 @@ export function PurchaseButton({ memoryId, price, isFree }: PurchaseButtonProps)
   const [downloadReady, setDownloadReady] = useState(false)
   const [filePath, setFilePath] = useState<string | null>(null)
   const router = useRouter()
+  const { t } = useTranslation()
   
   async function handlePurchase() {
     setLoading(true)
@@ -97,16 +99,16 @@ export function PurchaseButton({ memoryId, price, isFree }: PurchaseButtonProps)
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              下载中...
+              {t('purchase.downloading')}
             </>
           ) : (
             <>
               <Download className="w-4 h-4 mr-2" />
-              下载Memory文件
+              {t('purchase.download')}
             </>
           )}
         </Button>
-        <p className="text-green-600 text-sm text-center mt-2">✓ 获取成功！点击下载</p>
+        <p className="text-green-600 text-sm text-center mt-2">{t('purchase.success')}</p>
       </div>
     )
   }
@@ -122,10 +124,10 @@ export function PurchaseButton({ memoryId, price, isFree }: PurchaseButtonProps)
         {loading ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            处理中...
+            {t('purchase.processing')}
           </>
         ) : (
-          isFree ? '免费获取' : '立即购买'
+          isFree ? t('memory.getFree') : t('memory.purchase')
         )}
       </Button>
       
