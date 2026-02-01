@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatPrice } from '@/lib/utils'
-import { Package, ShoppingBag, DollarSign, Star, Brain, Shield, ArrowRight } from 'lucide-react'
+import { Package, ShoppingBag, DollarSign, Star, Brain, Shield, ArrowRight, Cloud, History } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useTranslation } from '@/lib/i18n/context'
 
@@ -21,6 +21,7 @@ export default function DashboardPage() {
     totalSales: 0,
     totalPurchases: 0,
     bankCount: 0,
+    cloudCount: 0,
   })
   
   const texts = {
@@ -38,6 +39,9 @@ export default function DashboardPage() {
       myOrdersDesc: 'View purchased Memories and download files',
       private: 'Private',
       new: 'New',
+      cloudMemory: 'Cloud Memory',
+      cloudMemoryDesc: 'Backup & sync your AI Memory across devices',
+      cloudCount: 'Cloud Backups',
     },
     zh: {
       title: '我的账户',
@@ -53,6 +57,9 @@ export default function DashboardPage() {
       myOrdersDesc: '查看已购买的Memory，下载文件',
       private: '私密',
       new: '新',
+      cloudMemory: '云端Memory',
+      cloudMemoryDesc: '备份和同步你的AI记忆，支持版本历史',
+      cloudCount: '云端备份',
     }
   }
   
@@ -70,10 +77,11 @@ export default function DashboardPage() {
     }
     
     // Fetch stats
-    const [memoriesRes, purchasesRes, bankRes] = await Promise.all([
+    const [memoriesRes, purchasesRes, bankRes, cloudRes] = await Promise.all([
       supabase.from('memories').select('id').eq('seller_id', user.id),
       supabase.from('orders').select('id').eq('buyer_id', user.id).eq('status', 'completed'),
       supabase.from('user_memories').select('id').eq('user_id', user.id),
+      supabase.from('cloud_memories').select('id').eq('user_id', user.id),
     ])
     
     setStats({
@@ -82,6 +90,7 @@ export default function DashboardPage() {
       totalSales: 0,
       totalPurchases: purchasesRes.data?.length || 0,
       bankCount: bankRes.data?.length || 0,
+      cloudCount: cloudRes.data?.length || 0,
     })
     
     setLoading(false)
@@ -162,13 +171,13 @@ export default function DashboardPage() {
       
       {/* Quick links */}
       <div className="grid md:grid-cols-3 gap-6">
-        {/* Memory Bank - Featured */}
-        <Link href="/dashboard/memory-bank" className="md:col-span-3">
-          <Card className="card-hover border-0 shadow-lg bg-gradient-to-r from-purple-600 to-pink-500 text-white overflow-hidden relative">
+        {/* Cloud Memory - Featured */}
+        <Link href="/dashboard/cloud" className="md:col-span-2">
+          <Card className="card-hover border-0 shadow-lg bg-gradient-to-r from-blue-600 to-cyan-500 text-white overflow-hidden relative h-full">
             <div className="absolute top-4 right-4 flex items-center gap-2">
               <span className="px-2 py-1 bg-white/20 rounded-full text-xs font-medium flex items-center gap-1">
-                <Shield className="w-3 h-3" />
-                {txt.private}
+                <History className="w-3 h-3" />
+                Version History
               </span>
               <span className="px-2 py-1 bg-yellow-400 text-yellow-900 rounded-full text-xs font-bold">
                 {txt.new}
@@ -177,16 +186,43 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-white">
                 <div className="p-3 bg-white/20 rounded-xl">
+                  <Cloud className="w-8 h-8" />
+                </div>
+                <div>
+                  <span className="text-2xl">{txt.cloudMemory}</span>
+                  <p className="text-blue-100 font-normal text-sm mt-1">{txt.cloudMemoryDesc}</p>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex items-center justify-between">
+              <div className="text-4xl font-bold">{stats.cloudCount}</div>
+              <ArrowRight className="w-6 h-6" />
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* Memory Bank */}
+        <Link href="/dashboard/memory-bank">
+          <Card className="card-hover border-0 shadow-lg bg-gradient-to-r from-purple-600 to-pink-500 text-white overflow-hidden relative h-full">
+            <div className="absolute top-4 right-4 flex items-center gap-2">
+              <span className="px-2 py-1 bg-white/20 rounded-full text-xs font-medium flex items-center gap-1">
+                <Shield className="w-3 h-3" />
+                {txt.private}
+              </span>
+            </div>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-white">
+                <div className="p-3 bg-white/20 rounded-xl">
                   <Brain className="w-8 h-8" />
                 </div>
                 <div>
-                  <span className="text-2xl">{txt.memoryBank}</span>
+                  <span className="text-xl">{txt.memoryBank}</span>
                   <p className="text-purple-100 font-normal text-sm mt-1">{txt.memoryBankDesc}</p>
                 </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="flex items-center justify-between">
-              <div className="text-4xl font-bold">{stats.bankCount}</div>
+              <div className="text-3xl font-bold">{stats.bankCount}</div>
               <ArrowRight className="w-6 h-6" />
             </CardContent>
           </Card>

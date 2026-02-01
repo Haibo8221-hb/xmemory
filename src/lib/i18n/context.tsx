@@ -9,7 +9,16 @@ interface I18nContextType {
   t: (key: TranslationKey) => string
 }
 
-const I18nContext = createContext<I18nContextType | undefined>(undefined)
+// Default context value for SSR
+const defaultContext: I18nContextType = {
+  locale: 'en',
+  setLocale: () => {},
+  t: (key: TranslationKey): string => {
+    return translations['en'][key] || key
+  }
+}
+
+const I18nContext = createContext<I18nContextType>(defaultContext)
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('en')
@@ -41,24 +50,20 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return translations[locale][key] || translations['en'][key] || key
   }
   
-  // Prevent hydration mismatch
-  if (!mounted) {
-    return <>{children}</>
-  }
+  // Always provide context, even during SSR
+  const value: I18nContextType = mounted 
+    ? { locale, setLocale, t }
+    : defaultContext
   
   return (
-    <I18nContext.Provider value={{ locale, setLocale, t }}>
+    <I18nContext.Provider value={value}>
       {children}
     </I18nContext.Provider>
   )
 }
 
 export function useI18n() {
-  const context = useContext(I18nContext)
-  if (!context) {
-    throw new Error('useI18n must be used within I18nProvider')
-  }
-  return context
+  return useContext(I18nContext)
 }
 
 export function useTranslation() {
