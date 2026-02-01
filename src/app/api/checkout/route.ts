@@ -6,26 +6,8 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     
-    // Check auth
+    // Check auth (optional - not required for purchase)
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: '请先登录' }, { status: 401 })
-    }
-    
-    // Ensure user has a profile (for foreign key constraint)
-    const { data: existingProfile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', user.id)
-      .single()
-    
-    if (!existingProfile) {
-      // Create profile if it doesn't exist
-      await supabase.from('profiles').insert({
-        id: user.id,
-        username: user.email?.split('@')[0] || null,
-      })
-    }
     
     const { memoryId } = await request.json()
     if (!memoryId) {
@@ -44,22 +26,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Memory不存在' }, { status: 404 })
     }
     
-    // Can't buy your own memory
-    if (memory.seller_id === user.id) {
+    // Can't buy your own memory (only check if logged in)
+    if (user && memory.seller_id === user.id) {
       return NextResponse.json({ error: '不能购买自己的Memory' }, { status: 400 })
     }
     
-    // Check if already purchased
-    const { data: existingOrder } = await supabase
-      .from('orders')
-      .select('id')
-      .eq('buyer_id', user.id)
-      .eq('memory_id', memoryId)
-      .eq('status', 'completed')
-      .single()
-    
-    if (existingOrder) {
-      return NextResponse.json({ error: '您已购买过此Memory' }, { status: 400 })
+    // Check if already purchased (only if logged in)
+    if (user) {
+      const { data: existingOrder } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('buyer_id', user.id)
+        .eq('memory_id', memoryId)
+        .eq('status', 'completed')
+        .single()
+      
+      if (existingOrder) {
+        return NextResponse.json({ error: '您已购买过此Memory' }, { status: 400 })
+      }
     }
     
     // Check minimum price for paid items (Stripe requires at least $0.50)
@@ -69,59 +53,50 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
     
-    // Handle free memory
+    // Handle free memory - no login required, direct download
     if (memory.price === 0) {
-      const { platformFee, sellerAmount } = calculateFees(0)
-      
-      // Create completed order directly
-      const { error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          buyer_id: user.id,
-          memory_id: memoryId,
-          amount: 0,
-          platform_fee: platformFee,
-          seller_amount: sellerAmount,
-          status: 'completed',
-        })
-      
-      if (orderError) {
-        console.error('Order error:', orderError)
-        return NextResponse.json({ error: '创建订单失败' }, { status: 500 })
-      }
-      
       // Increment download count
       await supabase.rpc('increment_download_count', { memory_id: memoryId })
       
-      return NextResponse.json({ free: true, memoryId })
-    }
-    
-    // Calculate fees
-    const { platformFee, sellerAmount } = calculateFees(memory.price)
-    
-    // Create pending order
-    const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .insert({
-        buyer_id: user.id,
-        memory_id: memoryId,
-        amount: memory.price,
-        platform_fee: platformFee,
-        seller_amount: sellerAmount,
-        status: 'pending',
+      // If logged in, record the order
+      if (user) {
+        // Ensure profile exists
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .single()
+        
+        if (!profile) {
+          await supabase.from('profiles').insert({
+            id: user.id,
+            username: user.email?.split('@')[0] || null,
+          })
+        }
+        
+        await supabase.from('orders').insert({
+          buyer_id: user.id,
+          memory_id: memoryId,
+          amount: 0,
+          platform_fee: 0,
+          seller_amount: 0,
+          status: 'completed',
+        })
+      }
+      
+      // Return file path for direct download
+      return NextResponse.json({ 
+        free: true, 
+        memoryId,
+        filePath: memory.file_path 
       })
-      .select()
-      .single()
-    
-    if (orderError || !order) {
-      console.error('Order error:', orderError)
-      return NextResponse.json({ error: '创建订单失败' }, { status: 500 })
     }
     
-    // Create Stripe checkout session
-    // Convert price from dollars to cents for Stripe
+    // Paid items - create Stripe checkout (no login required)
+    const { platformFee, sellerAmount } = calculateFees(memory.price)
     const priceInCents = Math.round(memory.price * 100)
     
+    // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -141,23 +116,18 @@ export async function POST(request: NextRequest) {
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/memory/${memoryId}`,
       metadata: {
-        orderId: order.id,
         memoryId: memoryId,
-        buyerId: user.id,
+        buyerId: user?.id || 'guest',
+        amount: memory.price.toString(),
+        platformFee: platformFee.toString(),
+        sellerAmount: sellerAmount.toString(),
       },
     })
-    
-    // Update order with stripe session id
-    await supabase
-      .from('orders')
-      .update({ stripe_payment_id: session.id })
-      .eq('id', order.id)
     
     return NextResponse.json({ url: session.url })
     
   } catch (error) {
     console.error('Checkout error:', error)
-    // Return more specific error for debugging
     const errorMessage = error instanceof Error ? error.message : '未知错误'
     return NextResponse.json({ 
       error: '支付创建失败', 
