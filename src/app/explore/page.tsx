@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { MemoryCard } from '@/components/memory/memory-card'
 import { Input } from '@/components/ui/input'
@@ -22,7 +22,7 @@ const categoryLabels: Record<string, { en: string; zh: string }> = {
   other: { en: 'Other', zh: '其他' },
 }
 
-export default function ExplorePage() {
+function ExploreContent() {
   const searchParams = useSearchParams()
   const { t, locale } = useTranslation()
   const supabase = createClient()
@@ -240,5 +240,20 @@ export default function ExplorePage() {
         </div>
       )}
     </div>
+  )
+}
+
+// Wrap with Suspense for useSearchParams
+export default function ExplorePage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto py-8 px-4">
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+        </div>
+      </div>
+    }>
+      <ExploreContent />
+    </Suspense>
   )
 }
