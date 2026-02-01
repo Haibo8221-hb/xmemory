@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PurchaseButton } from '@/components/memory/purchase-button'
 import { formatPrice, formatDate } from '@/lib/utils'
 import { CATEGORIES } from '@/types/database'
-import { Star, Download, Calendar, User } from 'lucide-react'
+import { Star, Download, Calendar, User, BadgeCheck, ShoppingBag } from 'lucide-react'
 
 interface MemoryPageProps {
   params: Promise<{ id: string }>
@@ -184,10 +184,25 @@ export default async function MemoryPage({ params }: MemoryPageProps) {
                     <User className="w-5 h-5 text-gray-500" />
                   </div>
                   <div>
-                    <p className="font-medium">
-                      {memory.seller?.display_name || '匿名卖家'}
-                    </p>
-                    <p className="text-sm text-gray-500">卖家</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">
+                        {memory.seller?.display_name || '匿名卖家'}
+                      </p>
+                      {memory.seller?.is_verified && (
+                        <span title="已认证卖家">
+                          <BadgeCheck className="w-4 h-4 text-blue-500" />
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <span>卖家</span>
+                      {memory.seller && memory.seller.sales_count > 0 && (
+                        <span className="flex items-center gap-1">
+                          <ShoppingBag className="w-3 h-3" />
+                          已售 {memory.seller.sales_count} 份
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 {memory.seller?.bio && (

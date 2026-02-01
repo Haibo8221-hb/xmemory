@@ -2,13 +2,14 @@ import { createClient } from '@/lib/supabase/server'
 import { MemoryCard } from '@/components/memory/memory-card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { CATEGORIES } from '@/types/database'
+import { CATEGORIES, SUBCATEGORIES } from '@/types/database'
 import { Search } from 'lucide-react'
 import Link from 'next/link'
 
 interface ExplorePageProps {
   searchParams: Promise<{
     category?: string
+    subcategory?: string
     q?: string
     platform?: string
   }>
@@ -28,6 +29,10 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
     query = query.eq('category', params.category)
   }
   
+  if (params.subcategory) {
+    query = query.eq('subcategory', params.subcategory)
+  }
+  
   if (params.platform) {
     query = query.eq('platform', params.platform)
   }
@@ -39,6 +44,8 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const { data: memories } = await query.limit(50)
   
   const currentCategory = CATEGORIES.find(c => c.value === params.category)
+  const availableSubcategories = params.category ? SUBCATEGORIES[params.category] || [] : []
+  const currentSubcategory = availableSubcategories.find(s => s.value === params.subcategory)
   
   return (
     <div className="container mx-auto py-8 px-4">
@@ -89,7 +96,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
       </div>
       
       {/* Categories */}
-      <div className="flex flex-wrap gap-2 mb-8">
+      <div className="flex flex-wrap gap-2 mb-4">
         <Link href="/explore">
           <Button variant={!params.category ? 'default' : 'outline'} size="sm">
             全部
@@ -109,6 +116,30 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
           </Link>
         ))}
       </div>
+      
+      {/* Subcategories */}
+      {params.category && availableSubcategories.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-8 pl-4 border-l-2 border-gray-200">
+          <Link href={`/explore?category=${params.category}`}>
+            <Button variant={!params.subcategory ? 'default' : 'ghost'} size="sm">
+              全部{currentCategory?.label}
+            </Button>
+          </Link>
+          {availableSubcategories.map(sub => (
+            <Link
+              key={sub.value}
+              href={`/explore?category=${params.category}&subcategory=${sub.value}`}
+            >
+              <Button
+                variant={params.subcategory === sub.value ? 'default' : 'ghost'}
+                size="sm"
+              >
+                {sub.label}
+              </Button>
+            </Link>
+          ))}
+        </div>
+      )}
       
       {/* Results */}
       {memories && memories.length > 0 ? (

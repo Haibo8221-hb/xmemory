@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { CATEGORIES, type Platform } from '@/types/database'
+import { CATEGORIES, SUBCATEGORIES, type Platform } from '@/types/database'
 import { Upload, AlertCircle } from 'lucide-react'
 
 export default function UploadPage() {
@@ -21,6 +21,7 @@ export default function UploadPage() {
     title: '',
     description: '',
     category: '',
+    subcategory: '',
     tags: '',
     price: '',
     platform: 'chatgpt' as Platform,
@@ -29,18 +30,28 @@ export default function UploadPage() {
     confirmPrivacy: false,
   })
   
+  // 当分类变化时，重置二级分类
+  const handleCategoryChange = (newCategory: string) => {
+    setFormData(prev => ({ ...prev, category: newCategory, subcategory: '' }))
+  }
+  
+  // 获取当前分类的二级分类列表
+  const availableSubcategories = formData.category ? SUBCATEGORIES[formData.category] || [] : []
+  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
     if (selectedFile) {
       setFile(selectedFile)
-      // Try to read preview content
+      // Try to read preview content - extract first 20%
       const reader = new FileReader()
       reader.onload = (event) => {
         const content = event.target?.result as string
-        // Show first 500 chars as preview
+        // Calculate 20% of content, min 200 chars, max 2000 chars
+        const previewLength = Math.min(2000, Math.max(200, Math.floor(content.length * 0.2)))
+        const preview = content.slice(0, previewLength)
         setFormData(prev => ({
           ...prev,
-          previewContent: content.slice(0, 500) + (content.length > 500 ? '...' : '')
+          previewContent: preview + (content.length > previewLength ? '\n\n[... 更多内容购买后可见 ...]' : '')
         }))
       }
       reader.readAsText(selectedFile)
@@ -86,6 +97,7 @@ export default function UploadPage() {
           title: formData.title,
           description: formData.description,
           category: formData.category || null,
+          subcategory: formData.subcategory || null,
           tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
           price: parseFloat(formData.price) || 0,
           file_path: fileName,
@@ -177,7 +189,7 @@ export default function UploadPage() {
                 <select
                   className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={formData.category}
-                  onChange={e => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                  onChange={e => handleCategoryChange(e.target.value)}
                 >
                   <option value="">选择分类</option>
                   {CATEGORIES.map(cat => (
@@ -189,17 +201,34 @@ export default function UploadPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">平台</label>
+                <label className="block text-sm font-medium mb-1">二级分类</label>
                 <select
-                  className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={formData.platform}
-                  onChange={e => setFormData(prev => ({ ...prev, platform: e.target.value as Platform }))}
+                  className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  value={formData.subcategory}
+                  onChange={e => setFormData(prev => ({ ...prev, subcategory: e.target.value }))}
+                  disabled={!formData.category || availableSubcategories.length === 0}
                 >
-                  <option value="chatgpt">ChatGPT</option>
-                  <option value="claude">Claude</option>
-                  <option value="gemini">Gemini</option>
+                  <option value="">选择二级分类</option>
+                  {availableSubcategories.map(sub => (
+                    <option key={sub.value} value={sub.value}>
+                      {sub.label}
+                    </option>
+                  ))}
                 </select>
               </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">平台</label>
+              <select
+                className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={formData.platform}
+                onChange={e => setFormData(prev => ({ ...prev, platform: e.target.value as Platform }))}
+              >
+                <option value="chatgpt">ChatGPT</option>
+                <option value="claude">Claude</option>
+                <option value="gemini">Gemini</option>
+              </select>
             </div>
             
             <div>

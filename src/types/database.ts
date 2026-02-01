@@ -9,6 +9,8 @@ export interface Profile {
   avatar_url: string | null
   bio: string | null
   stripe_account_id: string | null
+  is_verified: boolean
+  sales_count: number
   created_at: string
   updated_at: string
 }
@@ -19,6 +21,7 @@ export interface Memory {
   title: string
   description: string | null
   category: string | null
+  subcategory: string | null
   tags: string[]
   price: number
   file_path: string
@@ -76,3 +79,70 @@ export const CATEGORIES = [
 ] as const
 
 export type Category = typeof CATEGORIES[number]['value']
+
+// Subcategories for each category
+export const SUBCATEGORIES: Record<string, { value: string; label: string }[]> = {
+  programming: [
+    { value: 'react', label: 'React' },
+    { value: 'vue', label: 'Vue' },
+    { value: 'python', label: 'Python' },
+    { value: 'rust', label: 'Rust' },
+    { value: 'typescript', label: 'TypeScript' },
+    { value: 'go', label: 'Go' },
+    { value: 'java', label: 'Java' },
+    { value: 'mobile', label: '移动开发' },
+    { value: 'backend', label: '后端开发' },
+    { value: 'devops', label: 'DevOps' },
+    { value: 'other', label: '其他' },
+  ],
+  writing: [
+    { value: 'copywriting', label: '文案' },
+    { value: 'novel', label: '小说' },
+    { value: 'blog', label: '博客' },
+    { value: 'academic', label: '学术写作' },
+    { value: 'translation', label: '翻译' },
+    { value: 'other', label: '其他' },
+  ],
+  design: [
+    { value: 'ui', label: 'UI设计' },
+    { value: 'ux', label: 'UX设计' },
+    { value: 'logo', label: 'Logo设计' },
+    { value: 'illustration', label: '插画' },
+    { value: 'other', label: '其他' },
+  ],
+  business: [
+    { value: 'startup', label: '创业' },
+    { value: 'consulting', label: '咨询' },
+    { value: 'finance', label: '金融' },
+    { value: 'strategy', label: '战略' },
+    { value: 'other', label: '其他' },
+  ],
+  learning: [
+    { value: 'language', label: '语言学习' },
+    { value: 'math', label: '数学' },
+    { value: 'science', label: '科学' },
+    { value: 'exam', label: '考试备考' },
+    { value: 'other', label: '其他' },
+  ],
+  lifestyle: [
+    { value: 'cooking', label: '烹饪' },
+    { value: 'fitness', label: '健身' },
+    { value: 'travel', label: '旅行' },
+    { value: 'parenting', label: '育儿' },
+    { value: 'other', label: '其他' },
+  ],
+  marketing: [
+    { value: 'seo', label: 'SEO' },
+    { value: 'social', label: '社交媒体' },
+    { value: 'ads', label: '广告投放' },
+    { value: 'content', label: '内容营销' },
+    { value: 'other', label: '其他' },
+  ],
+  research: [
+    { value: 'data', label: '数据分析' },
+    { value: 'market', label: '市场调研' },
+    { value: 'academic', label: '学术研究' },
+    { value: 'other', label: '其他' },
+  ],
+  other: [],
+}

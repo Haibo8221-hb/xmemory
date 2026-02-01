@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { formatPrice, truncate } from '@/lib/utils'
 import { CATEGORIES, type Memory } from '@/types/database'
-import { Star, Download } from 'lucide-react'
+import { Star, Download, BadgeCheck, ShoppingBag } from 'lucide-react'
 
 interface MemoryCardProps {
   memory: Memory
@@ -49,23 +49,44 @@ export function MemoryCard({ memory }: MemoryCardProps) {
           )}
         </CardContent>
         
-        <CardFooter className="flex items-center justify-between border-t pt-4">
-          <div className="flex items-center gap-4 text-sm text-gray-500">
-            {memory.rating_count > 0 && (
-              <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span>{memory.rating_avg?.toFixed(1)}</span>
-              </div>
-            )}
-            <div className="flex items-center gap-1">
-              <Download className="w-4 h-4" />
-              <span>{memory.download_count}</span>
+        <CardFooter className="flex flex-col gap-3 border-t pt-4">
+          {/* Seller info */}
+          {memory.seller && (
+            <div className="w-full flex items-center gap-2 text-sm text-gray-500">
+              <span className="truncate">{memory.seller.display_name || '卖家'}</span>
+              {memory.seller.is_verified && (
+                <span title="已认证卖家">
+                  <BadgeCheck className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                </span>
+              )}
+              {memory.seller.sales_count > 0 && (
+                <span className="flex items-center gap-1 text-xs text-gray-400">
+                  <ShoppingBag className="w-3 h-3" />
+                  已售{memory.seller.sales_count}
+                </span>
+              )}
             </div>
-          </div>
+          )}
           
-          <span className="font-bold text-lg">
-            {memory.price === 0 ? '免费' : formatPrice(memory.price)}
-          </span>
+          {/* Stats & Price */}
+          <div className="w-full flex items-center justify-between">
+            <div className="flex items-center gap-4 text-sm text-gray-500">
+              {memory.rating_count > 0 && (
+                <div className="flex items-center gap-1">
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <span>{memory.rating_avg?.toFixed(1)}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1">
+                <Download className="w-4 h-4" />
+                <span>{memory.download_count}</span>
+              </div>
+            </div>
+            
+            <span className="font-bold text-lg">
+              {memory.price === 0 ? '免费' : formatPrice(memory.price)}
+            </span>
+          </div>
         </CardFooter>
       </Card>
     </Link>

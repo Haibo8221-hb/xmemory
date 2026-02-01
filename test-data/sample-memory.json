@@ -1,0 +1,28 @@
+{
+  "title": "资深前端开发助手",
+  "description": "经过6个月调教的前端开发Memory，熟悉React、TypeScript、Next.js最佳实践",
+  "memories": [
+    {
+      "content": "用户是一名资深前端开发工程师，主要使用 React + TypeScript + Next.js 技术栈",
+      "timestamp": "2025-08-15T10:30:00Z"
+    },
+    {
+      "content": "用户偏好使用 Tailwind CSS 进行样式开发，喜欢简洁的组件设计",
+      "timestamp": "2025-09-20T14:22:00Z"
+    },
+    {
+      "content": "代码风格：使用函数式组件、自定义 hooks、避免 class 组件",
+      "timestamp": "2025-10-05T09:15:00Z"
+    },
+    {
+      "content": "项目结构偏好：features 目录组织、barrel exports、绝对路径导入",
+      "timestamp": "2025-11-12T16:45:00Z"
+    },
+    {
+      "content": "测试策略：React Testing Library + Jest，注重集成测试而非单元测试",
+      "timestamp": "2025-12-01T11:00:00Z"
+    }
+  ],
+  "platform": "ChatGPT",
+  "exportedAt": "2026-01-30T08:00:00Z"
+}
