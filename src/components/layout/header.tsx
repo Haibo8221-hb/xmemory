@@ -101,6 +101,13 @@ export function Header() {
                       {t('nav.dashboard')}
                     </Link>
                     <Link 
+                      href="/dashboard/memory-bank" 
+                      className="block px-4 py-2 text-purple-600 hover:bg-purple-50 font-medium"
+                      onClick={() => setShowDropdown(false)}
+                    >
+                      🧠 {t('dashboard.memoryBank')}
+                    </Link>
+                    <Link 
                       href="/dashboard/purchases" 
                       className="block px-4 py-2 text-gray-700 hover:bg-gray-50"
                       onClick={() => setShowDropdown(false)}

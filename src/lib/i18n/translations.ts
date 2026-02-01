@@ -88,6 +88,7 @@ export const translations = {
     'dashboard.purchases': 'My Purchases',
     'dashboard.sales': 'My Sales',
     'dashboard.settings': 'Settings',
+    'dashboard.memoryBank': 'Memory Bank',
     
     // Footer
     'footer.marketplace': 'Marketplace',
@@ -211,6 +212,7 @@ export const translations = {
     'dashboard.purchases': '我的购买',
     'dashboard.sales': '我的销售',
     'dashboard.settings': '设置',
+    'dashboard.memoryBank': 'Memory银行',
     
     // Footer
     'footer.marketplace': '市场',
