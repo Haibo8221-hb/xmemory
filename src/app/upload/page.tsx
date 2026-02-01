@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { CATEGORIES, SUBCATEGORIES, type Platform } from '@/types/database'
+import { MIN_PRICE_USD } from '@/lib/stripe'
 import { Upload, AlertCircle } from 'lucide-react'
 
 export default function UploadPage() {
@@ -78,6 +79,13 @@ export default function UploadPage() {
       
       if (!formData.agreeToTerms || !formData.confirmPrivacy) {
         setError('请阅读并同意相关协议')
+        return
+      }
+      
+      // Validate price (must be 0 or >= MIN_PRICE_USD)
+      const price = parseFloat(formData.price) || 0
+      if (price > 0 && price < MIN_PRICE_USD) {
+        setError(`价格必须至少 $${MIN_PRICE_USD.toFixed(2)} 或设为免费（$0）`)
         return
       }
       
@@ -246,7 +254,7 @@ export default function UploadPage() {
         <Card>
           <CardHeader>
             <CardTitle>定价</CardTitle>
-            <CardDescription>设置为0表示免费，平台抽取20%服务费</CardDescription>
+            <CardDescription>设置为0表示免费，收费最低$0.50起，平台抽取20%服务费</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -262,6 +270,7 @@ export default function UploadPage() {
               />
               <span className="text-sm text-gray-500">USD</span>
             </div>
+            <p className="text-xs text-gray-400 mt-2">提示：定价$0为免费，收费至少$0.50（Stripe限制）</p>
           </CardContent>
         </Card>
         

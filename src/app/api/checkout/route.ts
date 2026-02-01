@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { stripe, calculateFees } from '@/lib/stripe'
+import { stripe, calculateFees, MIN_PRICE_USD } from '@/lib/stripe'
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,6 +10,21 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: '请先登录' }, { status: 401 })
+    }
+    
+    // Ensure user has a profile (for foreign key constraint)
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .single()
+    
+    if (!existingProfile) {
+      // Create profile if it doesn't exist
+      await supabase.from('profiles').insert({
+        id: user.id,
+        username: user.email?.split('@')[0] || null,
+      })
     }
     
     const { memoryId } = await request.json()
@@ -45,6 +60,13 @@ export async function POST(request: NextRequest) {
     
     if (existingOrder) {
       return NextResponse.json({ error: '您已购买过此Memory' }, { status: 400 })
+    }
+    
+    // Check minimum price for paid items (Stripe requires at least $0.50)
+    if (memory.price > 0 && memory.price < MIN_PRICE_USD) {
+      return NextResponse.json({ 
+        error: `价格必须至少 $${MIN_PRICE_USD.toFixed(2)} 或免费` 
+      }, { status: 400 })
     }
     
     // Handle free memory
