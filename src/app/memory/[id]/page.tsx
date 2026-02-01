@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatPrice, formatDate, calculateFees } from '@/lib/utils'
+import { PurchaseButton } from '@/components/memory/purchase-button'
+import { formatPrice, formatDate } from '@/lib/utils'
 import { CATEGORIES } from '@/types/database'
 import { Star, Download, Calendar, User } from 'lucide-react'
 
@@ -165,9 +165,13 @@ export default async function MemoryPage({ params }: MemoryPageProps) {
                 {memory.price === 0 ? '免费' : formatPrice(memory.price)}
               </div>
               
-              <Button className="w-full mb-4" size="lg">
-                {memory.price === 0 ? '免费获取' : '立即购买'}
-              </Button>
+              <div className="mb-4">
+                <PurchaseButton 
+                  memoryId={memory.id}
+                  price={memory.price}
+                  isFree={memory.price === 0}
+                />
+              </div>
               
               <p className="text-xs text-gray-500 text-center mb-6">
                 购买后立即获得下载链接
