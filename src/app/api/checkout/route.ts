@@ -135,6 +135,11 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('Checkout error:', error)
-    return NextResponse.json({ error: '支付创建失败' }, { status: 500 })
+    // Return more specific error for debugging
+    const errorMessage = error instanceof Error ? error.message : '未知错误'
+    return NextResponse.json({ 
+      error: '支付创建失败', 
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined 
+    }, { status: 500 })
   }
 }
