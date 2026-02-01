@@ -1,11 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { CATEGORIES } from '@/types/database'
-import { ArrowRight, Upload, ShoppingCart, Zap, Shield, Download, Sparkles } from 'lucide-react'
+import { CATEGORIES, type Memory } from '@/types/database'
+import { ArrowRight, Upload, ShoppingCart, Zap, Shield, Download, Sparkles, TrendingUp, Users, Package } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/context'
+import { MemoryCard } from '@/components/memory/memory-card'
 
 // Category gradients
 const categoryGradients: Record<string, string> = {
@@ -29,8 +31,30 @@ const categoryLabels: Record<string, { en: string; zh: string }> = {
   other: { en: 'Other', zh: '其他' },
 }
 
+interface Stats {
+  memories: number
+  downloads: number
+  sellers: number
+}
+
 export default function HomePage() {
   const { t, locale } = useTranslation()
+  const [stats, setStats] = useState<Stats>({ memories: 0, downloads: 0, sellers: 0 })
+  const [popularMemories, setPopularMemories] = useState<Memory[]>([])
+  const [newestMemories, setNewestMemories] = useState<Memory[]>([])
+  const [loading, setLoading] = useState(true)
+  
+  useEffect(() => {
+    fetch('/api/stats')
+      .then(res => res.json())
+      .then(data => {
+        setStats(data.stats)
+        setPopularMemories(data.popularMemories)
+        setNewestMemories(data.newestMemories)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
   
   const texts = {
     en: {
@@ -51,6 +75,12 @@ export default function HomePage() {
       trustSecure: 'Secure Payment',
       trustInstant: 'Instant Download',
       trustQuality: 'Quality Verified',
+      statsMemories: 'Memories',
+      statsDownloads: 'Downloads',
+      statsSellers: 'Sellers',
+      popularTitle: 'Popular Memories',
+      newestTitle: 'Just Added',
+      viewMore: 'View More',
     },
     zh: {
       heroSub: '把你调教AI的心血变现。分享你的ChatGPT Memory，',
@@ -70,6 +100,12 @@ export default function HomePage() {
       trustSecure: '安全交易',
       trustInstant: '即时下载',
       trustQuality: '品质保证',
+      statsMemories: '个Memory',
+      statsDownloads: '次下载',
+      statsSellers: '位卖家',
+      popularTitle: '热门Memory',
+      newestTitle: '最新上架',
+      viewMore: '查看更多',
     }
   }
   
@@ -108,6 +144,33 @@ export default function HomePage() {
             {txt.heroSub2}
           </p>
           
+          {/* Stats */}
+          <div className="flex items-center justify-center gap-8 mb-10">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 text-3xl font-bold text-purple-600">
+                <Package className="w-6 h-6" />
+                <span>{loading ? '...' : stats.memories}+</span>
+              </div>
+              <div className="text-sm text-gray-500">{txt.statsMemories}</div>
+            </div>
+            <div className="w-px h-12 bg-gray-200" />
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 text-3xl font-bold text-pink-600">
+                <Download className="w-6 h-6" />
+                <span>{loading ? '...' : stats.downloads}+</span>
+              </div>
+              <div className="text-sm text-gray-500">{txt.statsDownloads}</div>
+            </div>
+            <div className="w-px h-12 bg-gray-200" />
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 text-3xl font-bold text-cyan-600">
+                <Users className="w-6 h-6" />
+                <span>{loading ? '...' : stats.sellers}+</span>
+              </div>
+              <div className="text-sm text-gray-500">{txt.statsSellers}</div>
+            </div>
+          </div>
+          
           {/* Trust badges */}
           <div className="flex items-center justify-center gap-6 mb-10 text-sm text-gray-500">
             <div className="flex items-center gap-2">
@@ -138,6 +201,54 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Popular Memories */}
+      {popularMemories.length > 0 && (
+        <section className="py-16 px-4 bg-white">
+          <div className="container mx-auto">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <TrendingUp className="w-6 h-6 text-purple-600" />
+                <h2 className="text-2xl font-bold">{txt.popularTitle}</h2>
+              </div>
+              <Link href="/explore">
+                <Button variant="ghost" className="text-purple-600">
+                  {txt.viewMore} <ArrowRight className="ml-1 w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {popularMemories.map(memory => (
+                <MemoryCard key={memory.id} memory={memory} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Newest Memories */}
+      {newestMemories.length > 0 && (
+        <section className="py-16 px-4 bg-gray-50/50">
+          <div className="container mx-auto">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <Sparkles className="w-6 h-6 text-pink-600" />
+                <h2 className="text-2xl font-bold">{txt.newestTitle}</h2>
+              </div>
+              <Link href="/explore">
+                <Button variant="ghost" className="text-pink-600">
+                  {txt.viewMore} <ArrowRight className="ml-1 w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {newestMemories.map(memory => (
+                <MemoryCard key={memory.id} memory={memory} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* How it works */}
       <section className="py-20 px-4 bg-white">
