@@ -1,0 +1,52 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "Gateway time-out Error code 504" [level=1] [ref=e5]:
+      - generic [ref=e6]: Gateway time-out
+      - text: Error code 504
+    - generic [ref=e7]:
+      - text: Visit
+      - link "cloudflare.com" [ref=e8] [cursor=pointer]:
+        - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_504&utm_campaign=xmemory.work
+      - text: for more information.
+    - generic [ref=e9]: 2026-02-02 16:29:06 UTC
+  - generic [ref=e12]:
+    - generic [ref=e13]:
+      - text: You
+      - heading "Browser" [level=3] [ref=e17]
+      - text: Working
+    - generic [ref=e18]:
+      - link [ref=e20] [cursor=pointer]:
+        - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_504&utm_campaign=xmemory.work
+      - text: Frankfurt
+      - heading "Cloudflare" [level=3] [ref=e23]:
+        - link "Cloudflare" [ref=e24] [cursor=pointer]:
+          - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_504&utm_campaign=xmemory.work
+      - text: Working
+    - generic [ref=e25]:
+      - text: xmemory.work
+      - heading "Host" [level=3] [ref=e29]
+      - text: Error
+  - generic [ref=e31]:
+    - generic [ref=e32]:
+      - heading "What happened?" [level=2] [ref=e33]
+      - paragraph [ref=e34]: The web server reported a gateway time-out error.
+    - generic [ref=e35]:
+      - heading "What can I do?" [level=2] [ref=e36]
+      - paragraph [ref=e37]: Please try again in a few minutes.
+  - paragraph [ref=e39]:
+    - generic [ref=e40]:
+      - text: "Cloudflare Ray ID:"
+      - strong [ref=e41]: 9c7b0f4588a2c876
+    - text: •
+    - generic [ref=e42]:
+      - text: "Your IP:"
+      - button "Click to reveal" [ref=e43] [cursor=pointer]
+      - text: •
+    - generic [ref=e44]:
+      - text: Performance & security by
+      - link "Cloudflare" [ref=e45] [cursor=pointer]:
+        - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_504&utm_campaign=xmemory.work
+```

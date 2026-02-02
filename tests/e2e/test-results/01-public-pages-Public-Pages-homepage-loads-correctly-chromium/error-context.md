@@ -1,0 +1,171 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - link "🧠 xmemory" [ref=e6] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e7]: 🧠
+            - generic [ref=e8]: xmemory
+          - generic [ref=e10]:
+            - img [ref=e11]
+            - textbox "Search Memory..." [ref=e14]
+          - navigation [ref=e15]:
+            - link "Explore" [ref=e16] [cursor=pointer]:
+              - /url: /explore
+            - link "Upload" [ref=e17] [cursor=pointer]:
+              - /url: /upload
+        - generic [ref=e18]:
+          - button "中文" [ref=e19]:
+            - img [ref=e20]
+            - generic [ref=e23]: 中文
+          - link "Login" [ref=e24] [cursor=pointer]:
+            - /url: /auth/login
+            - button "Login" [ref=e25]
+          - link "Get Started" [ref=e26] [cursor=pointer]:
+            - /url: /dashboard/memory-bank
+            - button "Get Started" [ref=e27]
+    - main [ref=e28]:
+      - generic [ref=e29]:
+        - generic [ref=e34]:
+          - generic [ref=e35]:
+            - img [ref=e36]
+            - generic [ref=e39]: AI Memory 管理工具
+          - heading "Let Your AI Really Remember You" [level=1] [ref=e40]:
+            - text: Let Your AI
+            - generic [ref=e41]: Really Remember You
+          - paragraph [ref=e42]: Import, organize, and sync your ChatGPT Memory.
+          - paragraph [ref=e43]: Switch between profiles seamlessly, never lose your settings.
+          - generic [ref=e44]:
+            - link "Get Started Free" [ref=e45] [cursor=pointer]:
+              - /url: /dashboard/memory-bank
+              - button "Get Started Free" [ref=e46]:
+                - text: Get Started Free
+                - img [ref=e47]
+            - link "See How It Works" [ref=e49] [cursor=pointer]:
+              - /url: /docs/import
+              - button "See How It Works" [ref=e50]
+          - generic [ref=e52]: ✓ 0+ users managing 0+ memories
+        - generic [ref=e54]:
+          - heading "😫 Sound Familiar?" [level=2] [ref=e55]
+          - generic [ref=e56]:
+            - generic [ref=e58]:
+              - generic [ref=e59]: 🤯
+              - paragraph [ref=e60]: ChatGPT remembers random garbage
+            - generic [ref=e62]:
+              - generic [ref=e63]: 😱
+              - paragraph [ref=e64]: Memory gone after clearing cache
+            - generic [ref=e66]:
+              - generic [ref=e67]: 😵
+              - paragraph [ref=e68]: Work and personal contexts mixed up
+        - generic [ref=e70]:
+          - heading "✅ xmemory Solves This" [level=2] [ref=e71]
+          - paragraph [ref=e72]: Six core features to keep your AI memory organized
+          - generic [ref=e73]:
+            - generic [ref=e75]:
+              - img [ref=e77]
+              - heading "Import" [level=3] [ref=e80]
+              - paragraph [ref=e81]: Upload JSON or paste text
+            - generic [ref=e83]:
+              - img [ref=e85]
+              - heading "Organize" [level=3] [ref=e87]
+              - paragraph [ref=e88]: Group into Skills
+            - generic [ref=e90]:
+              - img [ref=e92]
+              - heading "Export" [level=3] [ref=e97]
+              - paragraph [ref=e98]: One-click copy, multi-format
+            - generic [ref=e100]:
+              - img [ref=e102]
+              - heading "Profiles" [level=3] [ref=e106]
+              - paragraph [ref=e107]: Switch work/personal modes
+            - generic [ref=e109]:
+              - img [ref=e111]
+              - heading "Cloud Sync" [level=3] [ref=e113]
+              - paragraph [ref=e114]: Never lose your data
+            - generic [ref=e116]:
+              - img [ref=e118]
+              - heading "Privacy First" [level=3] [ref=e121]
+              - paragraph [ref=e122]: Sensitive info detection
+        - generic [ref=e124]:
+          - generic [ref=e125]:
+            - heading "🚀 Want More? Try Pro Solutions" [level=2] [ref=e126]
+            - paragraph [ref=e127]: Pre-built expert Memory packs for specific use cases
+          - generic [ref=e128]:
+            - link "💼 Interview Coach $9.99 Learn more →" [ref=e129] [cursor=pointer]:
+              - /url: /pricing
+              - generic [ref=e131]:
+                - generic [ref=e132]: 💼
+                - heading "Interview Coach" [level=3] [ref=e133]
+                - paragraph [ref=e134]: $9.99
+                - paragraph [ref=e135]: Learn more →
+            - link "✍️ Writing Coach $19.99 Learn more →" [ref=e136] [cursor=pointer]:
+              - /url: /pricing
+              - generic [ref=e138]:
+                - generic [ref=e139]: ✍️
+                - heading "Writing Coach" [level=3] [ref=e140]
+                - paragraph [ref=e141]: $19.99
+                - paragraph [ref=e142]: Learn more →
+            - link "💻 Coding Expert $14.99 Learn more →" [ref=e143] [cursor=pointer]:
+              - /url: /pricing
+              - generic [ref=e145]:
+                - generic [ref=e146]: 💻
+                - heading "Coding Expert" [level=3] [ref=e147]
+                - paragraph [ref=e148]: $14.99
+                - paragraph [ref=e149]: Learn more →
+        - generic [ref=e151]:
+          - heading "Ready to organize your AI?" [level=2] [ref=e152]
+          - paragraph [ref=e153]: Free to start. Your memories, your control.
+          - link "Start Now - Free" [ref=e154] [cursor=pointer]:
+            - /url: /dashboard/memory-bank
+            - button "Start Now - Free" [ref=e155]:
+              - text: Start Now - Free
+              - img [ref=e156]
+    - contentinfo [ref=e158]:
+      - generic [ref=e159]:
+        - generic [ref=e160]:
+          - generic [ref=e161]:
+            - generic [ref=e162]:
+              - generic [ref=e163]: 🧠
+              - generic [ref=e164]: xmemory
+            - paragraph [ref=e165]:
+              - text: AI Memory Tool
+              - text: Organize your AI memories
+          - generic [ref=e166]:
+            - heading "Marketplace" [level=4] [ref=e167]
+            - list [ref=e168]:
+              - listitem [ref=e169]:
+                - link "Browse All" [ref=e170] [cursor=pointer]:
+                  - /url: /explore
+              - listitem [ref=e171]:
+                - link "Development" [ref=e172] [cursor=pointer]:
+                  - /url: /explore?category=development
+              - listitem [ref=e173]:
+                - link "Writing" [ref=e174] [cursor=pointer]:
+                  - /url: /explore?category=writing
+          - generic [ref=e175]:
+            - heading "Help" [level=4] [ref=e176]
+            - list [ref=e177]:
+              - listitem [ref=e178]:
+                - link "How to Export Memory" [ref=e179] [cursor=pointer]:
+                  - /url: /docs/export
+              - listitem [ref=e180]:
+                - link "How to Import Memory" [ref=e181] [cursor=pointer]:
+                  - /url: /docs/import
+              - listitem [ref=e182]:
+                - link "FAQ" [ref=e183] [cursor=pointer]:
+                  - /url: /docs/faq
+          - generic [ref=e184]:
+            - heading "Legal" [level=4] [ref=e185]
+            - list [ref=e186]:
+              - listitem [ref=e187]:
+                - link "Terms of Service" [ref=e188] [cursor=pointer]:
+                  - /url: /terms
+              - listitem [ref=e189]:
+                - link "Privacy Policy" [ref=e190] [cursor=pointer]:
+                  - /url: /privacy
+        - generic [ref=e191]: © 2026 xmemory. All rights reserved.
+  - alert [ref=e192]
+```

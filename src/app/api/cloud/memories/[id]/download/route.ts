@@ -72,6 +72,8 @@ export async function GET(
       headers: {
         'Content-Type': 'application/json',
         'Content-Disposition': `attachment; filename="${filename}"`,
+        'Cache-Control': 'private, max-age=60',
+        'X-Content-Size': String(downloadContent.length),
       },
     })
   } catch (error) {
