@@ -9,8 +9,8 @@ export const translations = {
     'nav.logout': 'Logout',
     
     // Home
-    'home.title': 'AI Memory Marketplace',
-    'home.subtitle': 'Trade your trained AI memories',
+    'home.title': 'AI Memory Tool',
+    'home.subtitle': 'Organize your AI memories',
     'home.cta': 'Browse Marketplace',
     'home.upload': 'Sell Your Memory',
     
@@ -133,8 +133,8 @@ export const translations = {
     'nav.logout': '退出',
     
     // Home
-    'home.title': 'AI记忆交易市场',
-    'home.subtitle': '让调教成果变现',
+    'home.title': 'AI记忆管理工具',
+    'home.subtitle': '让AI真正记住你',
     'home.cta': '浏览市场',
     'home.upload': '出售Memory',
     

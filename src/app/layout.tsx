@@ -1,15 +1,12 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { I18nProvider } from '@/lib/i18n/context'
 
-const inter = Inter({ subsets: ['latin'] })
-
 export const metadata: Metadata = {
-  title: 'xmemory - AI Memory Marketplace',
-  description: 'Trade your trained AI memories',
+  title: 'xmemory - AI Memory 管理工具',
+  description: '导入、整理、同步你的 AI 记忆，跨平台无缝切换',
 }
 
 export default function RootLayout({
@@ -18,8 +15,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="zh-CN">
+      <head>
+        <link 
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" 
+          rel="stylesheet" 
+        />
+      </head>
+      <body>
         <I18nProvider>
           <div className="min-h-screen flex flex-col">
             <Header />

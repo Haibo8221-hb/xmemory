@@ -1,22 +1,29 @@
 import Stripe from 'stripe'
+import { PLATFORM_FEE_PERCENT } from './constants'
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing STRIPE_SECRET_KEY')
+// Only initialize Stripe on server-side
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY
+
+export const stripe = stripeSecretKey 
+  ? new Stripe(stripeSecretKey, {
+      apiVersion: '2026-01-28.clover',
+      typescript: true,
+    })
+  : null
+
+// Helper to get stripe instance with type assertion (for server-side only)
+export function getStripe(): Stripe {
+  if (!stripe) {
+    throw new Error('Stripe is not initialized. Missing STRIPE_SECRET_KEY.')
+  }
+  return stripe
 }
-
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2026-01-28.clover',
-  typescript: true,
-})
-
-// Platform fee percentage (20%)
-export const PLATFORM_FEE_PERCENT = 20
-
-// Minimum price in USD (Stripe requires at least ~$0.50)
-export const MIN_PRICE_USD = 0.50
 
 export function calculateFees(price: number) {
   const platformFee = Math.round(price * PLATFORM_FEE_PERCENT / 100)
   const sellerAmount = price - platformFee
   return { platformFee, sellerAmount }
 }
+
+// Re-export constants for backward compatibility
+export { PLATFORM_FEE_PERCENT, MIN_PRICE_USD } from './constants'

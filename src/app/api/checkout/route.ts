@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { stripe, calculateFees, MIN_PRICE_USD } from '@/lib/stripe'
+import { getStripe, calculateFees, MIN_PRICE_USD } from '@/lib/stripe'
 
 export async function POST(request: NextRequest) {
   try {
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     const priceInCents = Math.round(memory.price * 100)
     
     // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {

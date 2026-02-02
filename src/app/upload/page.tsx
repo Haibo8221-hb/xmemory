@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { CATEGORIES, SUBCATEGORIES, type Platform } from '@/types/database'
-import { MIN_PRICE_USD } from '@/lib/stripe'
+import { MIN_PRICE_USD } from '@/lib/constants'
 import { Upload, AlertCircle } from 'lucide-react'
 
 export default function UploadPage() {

@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { useTranslation } from '@/lib/i18n/context'
 import { LanguageSwitcher } from '@/components/language-switcher'
-import { Search, User as UserIcon, ChevronDown } from 'lucide-react'
+import { Search, User as UserIcon, ChevronDown, Brain, Upload, ShoppingBag, Package, Settings, LogOut, Eye, Users, Sparkles } from 'lucide-react'
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null)
@@ -16,7 +16,38 @@ export function Header() {
   const [showDropdown, setShowDropdown] = useState(false)
   const supabase = createClient()
   const router = useRouter()
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
+
+  const texts = {
+    en: {
+      memoryBank: 'Memory Bank',
+      explore: 'Explore',
+      upload: 'Upload',
+      dashboard: 'Dashboard',
+      myPurchases: 'My Purchases',
+      mySales: 'My Sales',
+      settings: 'Settings',
+      logout: 'Log out',
+      login: 'Login',
+      register: 'Get Started',
+      search: 'Search',
+    },
+    zh: {
+      memoryBank: 'Memory Bank',
+      explore: '浏览市场',
+      upload: '上传',
+      dashboard: '控制台',
+      myPurchases: '我买的',
+      mySales: '我卖的',
+      settings: '设置',
+      logout: '退出登录',
+      login: '登录',
+      register: '免费开始',
+      search: '搜索',
+    }
+  }
+  
+  const txt = texts[locale] || texts.en
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -57,7 +88,7 @@ export function Header() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder={t('common.search') + ' Memory...'}
+                placeholder={`${txt.search} Memory...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-64 pl-10 pr-4 py-2 text-sm bg-gray-100/80 border-0 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:bg-white transition-all"
@@ -65,12 +96,22 @@ export function Header() {
             </div>
           </form>
           
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/explore" className="text-gray-600 hover:text-purple-600 transition-colors">
-              {t('nav.explore')}
+          {/* Main Nav - Updated */}
+          <nav className="hidden md:flex items-center gap-1">
+            {/* Memory Bank - Primary CTA for logged in users */}
+            {user && (
+              <Link href="/dashboard/memory-bank">
+                <Button variant="ghost" size="sm" className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 font-medium">
+                  <Brain className="w-4 h-4 mr-1.5" />
+                  {txt.memoryBank}
+                </Button>
+              </Link>
+            )}
+            <Link href="/explore" className="px-3 py-2 text-gray-600 hover:text-purple-600 transition-colors text-sm">
+              {txt.explore}
             </Link>
-            <Link href="/upload" className="text-gray-600 hover:text-purple-600 transition-colors">
-              {t('nav.upload')}
+            <Link href="/upload" className="px-3 py-2 text-gray-600 hover:text-purple-600 transition-colors text-sm">
+              {txt.upload}
             </Link>
           </nav>
         </div>
@@ -92,41 +133,82 @@ export function Header() {
               {showDropdown && (
                 <>
                   <div className="fixed inset-0" onClick={() => setShowDropdown(false)} />
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
-                    <Link 
-                      href="/dashboard" 
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-50"
-                      onClick={() => setShowDropdown(false)}
-                    >
-                      {t('nav.dashboard')}
-                    </Link>
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                    {/* Memory Bank - Top item */}
                     <Link 
                       href="/dashboard/memory-bank" 
-                      className="block px-4 py-2 text-purple-600 hover:bg-purple-50 font-medium"
+                      className="flex items-center gap-3 px-4 py-2.5 text-purple-600 hover:bg-purple-50 font-medium"
                       onClick={() => setShowDropdown(false)}
                     >
-                      🧠 {t('dashboard.memoryBank')}
+                      <Brain className="w-4 h-4" />
+                      🧠 {txt.memoryBank}
+                    </Link>
+                    
+                    {/* X-Ray - New Feature */}
+                    <Link 
+                      href="/dashboard/xray" 
+                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50"
+                      onClick={() => setShowDropdown(false)}
+                    >
+                      <Eye className="w-4 h-4 text-blue-500" />
+                      {locale === 'zh' ? '记忆透视' : 'Memory X-Ray'}
+                    </Link>
+                    
+                    {/* Profiles - New Feature */}
+                    <Link 
+                      href="/dashboard/profiles" 
+                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50"
+                      onClick={() => setShowDropdown(false)}
+                    >
+                      <Users className="w-4 h-4 text-green-500" />
+                      {locale === 'zh' ? '记忆人格' : 'Memory Profiles'}
+                    </Link>
+                    
+                    {/* Smart Organize - New Feature */}
+                    <Link 
+                      href="/dashboard/organize" 
+                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50"
+                      onClick={() => setShowDropdown(false)}
+                    >
+                      <Sparkles className="w-4 h-4 text-orange-500" />
+                      {locale === 'zh' ? '智能整理' : 'Smart Organize'}
+                    </Link>
+                    
+                    <hr className="my-2 border-gray-100" />
+                    
+                    <Link 
+                      href="/dashboard" 
+                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50"
+                      onClick={() => setShowDropdown(false)}
+                    >
+                      <Package className="w-4 h-4 text-gray-400" />
+                      {txt.dashboard}
                     </Link>
                     <Link 
                       href="/dashboard/purchases" 
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-50"
+                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50"
                       onClick={() => setShowDropdown(false)}
                     >
-                      {t('dashboard.purchases')}
+                      <ShoppingBag className="w-4 h-4 text-gray-400" />
+                      {txt.myPurchases}
                     </Link>
                     <Link 
                       href="/dashboard/sales" 
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-50"
+                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50"
                       onClick={() => setShowDropdown(false)}
                     >
-                      {t('dashboard.sales')}
+                      <Upload className="w-4 h-4 text-gray-400" />
+                      {txt.mySales}
                     </Link>
+                    
                     <hr className="my-2 border-gray-100" />
+                    
                     <button 
                       onClick={handleSignOut}
-                      className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                      className="flex items-center gap-3 w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
                     >
-                      {t('nav.logout')}
+                      <LogOut className="w-4 h-4" />
+                      {txt.logout}
                     </button>
                   </div>
                 </>
@@ -135,11 +217,11 @@ export function Header() {
           ) : (
             <>
               <Link href="/auth/login">
-                <Button variant="ghost" className="btn-hover">{t('nav.login')}</Button>
+                <Button variant="ghost" className="btn-hover">{txt.login}</Button>
               </Link>
-              <Link href="/auth/register">
+              <Link href="/dashboard/memory-bank">
                 <Button className="btn-hover bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 border-0">
-                  {t('nav.register')}
+                  {txt.register}
                 </Button>
               </Link>
             </>
