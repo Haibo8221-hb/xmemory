@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,8 +9,42 @@ import { useTranslation } from '@/lib/i18n/context'
 import { Check, Sparkles, Zap, Crown, ArrowRight } from 'lucide-react'
 
 export default function PricingPage() {
+  const router = useRouter()
   const { locale } = useTranslation()
   const [annual, setAnnual] = useState(false)
+  const [loading, setLoading] = useState(false)
+  
+  async function handleUpgrade() {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/checkout/subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ annual }),
+      })
+      
+      const data = await res.json()
+      
+      if (data.error) {
+        if (res.status === 401) {
+          // Not logged in, redirect to login
+          router.push('/auth/login?redirect=/pricing')
+          return
+        }
+        alert(data.error)
+        return
+      }
+      
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch (error) {
+      console.error('Upgrade error:', error)
+      alert('升级失败，请稍后重试')
+    } finally {
+      setLoading(false)
+    }
+  }
   
   const texts = {
     en: {
@@ -213,8 +248,12 @@ export default function PricingPage() {
                   </li>
                 ))}
               </ul>
-              <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-500 border-0">
-                {txt.proCta}
+              <Button 
+                onClick={handleUpgrade}
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-500 border-0"
+              >
+                {loading ? (locale === 'zh' ? '处理中...' : 'Processing...') : txt.proCta}
               </Button>
             </CardContent>
           </Card>
