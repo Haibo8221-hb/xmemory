@@ -5,8 +5,8 @@ import { useSearchParams } from 'next/navigation'
 import { MemoryCard } from '@/components/memory/memory-card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { CATEGORIES, SUBCATEGORIES, type Memory } from '@/types/database'
-import { Search, Filter, Loader2 } from 'lucide-react'
+import { CATEGORIES, SUBCATEGORIES, CONTENT_TYPES, type Memory, type ContentType } from '@/types/database'
+import { Search, Filter, Loader2, Brain, Zap, User } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslation } from '@/lib/i18n/context'
 import { createClient } from '@/lib/supabase/client'
@@ -34,6 +34,7 @@ function ExploreContent() {
   const category = searchParams.get('category') || ''
   const subcategory = searchParams.get('subcategory') || ''
   const platform = searchParams.get('platform') || ''
+  const contentType = searchParams.get('type') || ''
   const q = searchParams.get('q') || ''
   
   const currentCategory = CATEGORIES.find(c => c.value === category)
@@ -61,6 +62,10 @@ function ExploreContent() {
         query = query.eq('platform', platform)
       }
       
+      if (contentType) {
+        query = query.eq('content_type', contentType)
+      }
+      
       if (q) {
         query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%`)
       }
@@ -71,30 +76,32 @@ function ExploreContent() {
     }
     
     fetchMemories()
-  }, [category, subcategory, platform, q, supabase])
+  }, [category, subcategory, platform, contentType, q, supabase])
   
   const texts = {
     en: {
       title: 'Explore Marketplace',
-      subtitle: 'Discover professionally trained AI Memories',
-      search: 'Search Memories...',
+      subtitle: 'Discover professionally trained AI content',
+      search: 'Search...',
       searchBtn: 'Search',
       all: 'All',
       allCategory: 'All',
-      noResults: 'No Memories found',
+      noResults: 'No content found',
       beFirst: 'Be the first to upload',
       filters: 'Filters',
+      contentTypes: 'Content Type',
     },
     zh: {
       title: '浏览市场',
-      subtitle: '发现专业调教的AI Memory',
-      search: '搜索Memory...',
+      subtitle: '发现专业调教的 AI 内容',
+      search: '搜索...',
       searchBtn: '搜索',
       all: '全部',
       allCategory: '全部',
-      noResults: '暂无Memory',
+      noResults: '暂无内容',
       beFirst: '成为第一个上传者',
       filters: '筛选',
+      contentTypes: '内容类型',
     }
   }
   
@@ -113,9 +120,10 @@ function ExploreContent() {
   
   const buildUrl = (newParams: Record<string, string>) => {
     const params = new URLSearchParams()
-    if (newParams.category) params.set('category', newParams.category)
-    if (newParams.subcategory) params.set('subcategory', newParams.subcategory)
-    if (newParams.platform) params.set('platform', newParams.platform)
+    if (newParams.category !== undefined ? newParams.category : category) params.set('category', newParams.category !== undefined ? newParams.category : category)
+    if (newParams.subcategory !== undefined ? newParams.subcategory : subcategory) params.set('subcategory', newParams.subcategory !== undefined ? newParams.subcategory : subcategory)
+    if (newParams.platform !== undefined ? newParams.platform : platform) params.set('platform', newParams.platform !== undefined ? newParams.platform : platform)
+    if (newParams.type !== undefined ? newParams.type : contentType) params.set('type', newParams.type !== undefined ? newParams.type : contentType)
     if (q) params.set('q', q)
     return `/explore?${params.toString()}`
   }
@@ -130,6 +138,30 @@ function ExploreContent() {
             : txt.title}
         </h1>
         <p className="text-gray-500">{txt.subtitle}</p>
+      </div>
+      
+      {/* Content Type Tabs */}
+      <div className="flex gap-2 mb-6 border-b border-gray-200 pb-4">
+        <Link href={buildUrl({ type: '' })}>
+          <Button 
+            variant={!contentType ? 'default' : 'ghost'} 
+            size="sm" 
+            className={!contentType ? 'bg-gradient-to-r from-purple-600 to-pink-500 border-0' : ''}
+          >
+            {txt.all}
+          </Button>
+        </Link>
+        {CONTENT_TYPES.map(ct => (
+          <Link key={ct.value} href={buildUrl({ type: ct.value })}>
+            <Button 
+              variant={contentType === ct.value ? 'default' : 'ghost'} 
+              size="sm"
+              className={contentType === ct.value ? 'bg-gradient-to-r from-purple-600 to-pink-500 border-0' : ''}
+            >
+              {ct.emoji} {locale === 'zh' ? ct.labelZh : ct.label}
+            </Button>
+          </Link>
+        ))}
       </div>
       
       {/* Filters */}
@@ -152,17 +184,17 @@ function ExploreContent() {
         
         {/* Platform filter */}
         <div className="flex gap-2">
-          <Link href={buildUrl({ category, subcategory, platform: '' })}>
+          <Link href={buildUrl({ platform: '' })}>
             <Button variant={!platform ? 'default' : 'outline'} size="sm" className={!platform ? 'bg-gradient-to-r from-purple-600 to-pink-500 border-0' : ''}>
               {txt.all}
             </Button>
           </Link>
-          <Link href={buildUrl({ category, subcategory, platform: 'chatgpt' })}>
+          <Link href={buildUrl({ platform: 'chatgpt' })}>
             <Button variant={platform === 'chatgpt' ? 'default' : 'outline'} size="sm" className={platform === 'chatgpt' ? 'bg-gradient-to-r from-purple-600 to-pink-500 border-0' : ''}>
               ChatGPT
             </Button>
           </Link>
-          <Link href={buildUrl({ category, subcategory, platform: 'claude' })}>
+          <Link href={buildUrl({ platform: 'claude' })}>
             <Button variant={platform === 'claude' ? 'default' : 'outline'} size="sm" className={platform === 'claude' ? 'bg-gradient-to-r from-purple-600 to-pink-500 border-0' : ''}>
               Claude
             </Button>

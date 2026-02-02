@@ -1,6 +1,41 @@
 export type Platform = 'chatgpt' | 'claude' | 'gemini'
 export type MemoryStatus = 'active' | 'draft' | 'removed'
 export type OrderStatus = 'pending' | 'completed' | 'refunded'
+export type ContentType = 'memory' | 'skill' | 'profile'
+
+// Content type metadata
+export const CONTENT_TYPES = [
+  { 
+    value: 'memory' as ContentType, 
+    label: 'Memory', 
+    labelZh: '记忆',
+    emoji: '🧠',
+    description: 'AI对话记忆，个性化设置',
+    descriptionZh: 'AI对话记忆，个性化设置',
+    acceptFormats: '.json,.txt',
+    formatHint: 'JSON (ChatGPT导出格式) 或 TXT',
+  },
+  { 
+    value: 'skill' as ContentType, 
+    label: 'Skill', 
+    labelZh: '技能',
+    emoji: '⚡',
+    description: 'Specialized prompts and instructions',
+    descriptionZh: '专业提示词和指令集',
+    acceptFormats: '.md,.txt,.zip',
+    formatHint: 'Markdown (SKILL.md) 或 ZIP 包',
+  },
+  { 
+    value: 'profile' as ContentType, 
+    label: 'Profile', 
+    labelZh: '角色',
+    emoji: '👤',
+    description: 'AI persona and character settings',
+    descriptionZh: 'AI人设和角色配置',
+    acceptFormats: '.json,.yaml,.yml,.txt,.md',
+    formatHint: 'JSON / YAML / Markdown / TXT',
+  },
+] as const
 
 export interface Profile {
   id: string
@@ -27,6 +62,7 @@ export interface Memory {
   file_path: string
   preview_content: string | null
   platform: Platform
+  content_type: ContentType
   download_count: number
   rating_avg: number | null
   rating_count: number

@@ -16,18 +16,20 @@ CREATE TABLE profiles (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Memories table (the products)
+-- Memories table (the products - includes Memory, Skill, and Profile types)
 CREATE TABLE memories (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   seller_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   description TEXT,
   category TEXT,
+  subcategory TEXT,
   tags TEXT[] DEFAULT '{}',
   price DECIMAL(10, 2) NOT NULL DEFAULT 0,
   file_path TEXT NOT NULL,
   preview_content TEXT,
   platform TEXT NOT NULL DEFAULT 'chatgpt',
+  content_type TEXT NOT NULL DEFAULT 'memory',
   download_count INT DEFAULT 0,
   rating_avg DECIMAL(3, 2),
   rating_count INT DEFAULT 0,
@@ -36,6 +38,7 @@ CREATE TABLE memories (
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   
   CONSTRAINT valid_platform CHECK (platform IN ('chatgpt', 'claude', 'gemini')),
+  CONSTRAINT valid_content_type CHECK (content_type IN ('memory', 'skill', 'profile')),
   CONSTRAINT valid_status CHECK (status IN ('active', 'draft', 'removed')),
   CONSTRAINT valid_price CHECK (price >= 0)
 );
@@ -73,6 +76,7 @@ CREATE TABLE reviews (
 CREATE INDEX idx_memories_seller ON memories(seller_id);
 CREATE INDEX idx_memories_category ON memories(category);
 CREATE INDEX idx_memories_platform ON memories(platform);
+CREATE INDEX idx_memories_content_type ON memories(content_type);
 CREATE INDEX idx_memories_status ON memories(status);
 CREATE INDEX idx_memories_created ON memories(created_at DESC);
 CREATE INDEX idx_orders_buyer ON orders(buyer_id);

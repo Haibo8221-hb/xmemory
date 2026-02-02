@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { formatPrice, truncate } from '@/lib/utils'
-import { CATEGORIES, type Memory } from '@/types/database'
+import { CATEGORIES, CONTENT_TYPES, type Memory } from '@/types/database'
 import { Star, Download, BadgeCheck, User } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/context'
 
@@ -25,6 +25,7 @@ const categoryGradients: Record<string, string> = {
 export function MemoryCard({ memory }: MemoryCardProps) {
   const { t, locale } = useTranslation()
   const category = CATEGORIES.find(c => c.value === memory.category)
+  const contentType = CONTENT_TYPES.find(ct => ct.value === memory.content_type) || CONTENT_TYPES[0]
   const gradient = categoryGradients[memory.category || 'other'] || 'from-gray-500 to-slate-500'
   
   return (
@@ -34,6 +35,10 @@ export function MemoryCard({ memory }: MemoryCardProps) {
         <div className={`h-24 bg-gradient-to-br ${gradient} relative flex items-center justify-center`}>
           <span className="text-5xl opacity-90 drop-shadow-lg">
             {category?.emoji || '📦'}
+          </span>
+          {/* Content type badge */}
+          <span className="absolute top-3 left-3 text-xs px-2 py-1 rounded-full bg-black/30 text-white backdrop-blur-sm">
+            {contentType.emoji} {locale === 'zh' ? contentType.labelZh : contentType.label}
           </span>
           {/* Platform badge */}
           <span className="absolute top-3 right-3 badge-platform bg-white/90 backdrop-blur-sm">

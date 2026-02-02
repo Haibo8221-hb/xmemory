@@ -6,19 +6,29 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { CATEGORIES, SUBCATEGORIES, type Platform } from '@/types/database'
+import { CATEGORIES, SUBCATEGORIES, CONTENT_TYPES, type Platform, type ContentType } from '@/types/database'
 import { MIN_PRICE_USD } from '@/lib/constants'
-import { Upload, AlertCircle } from 'lucide-react'
+import { Upload, AlertCircle, Brain, Zap, User, ArrowLeft, Check } from 'lucide-react'
+
+const ContentTypeIcon = ({ type }: { type: ContentType }) => {
+  switch (type) {
+    case 'memory': return <Brain className="w-6 h-6" />
+    case 'skill': return <Zap className="w-6 h-6" />
+    case 'profile': return <User className="w-6 h-6" />
+  }
+}
 
 export default function UploadPage() {
   const router = useRouter()
   const supabase = createClient()
   
+  const [step, setStep] = useState<'type' | 'details'>('type')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [file, setFile] = useState<File | null>(null)
   
   const [formData, setFormData] = useState({
+    contentType: 'memory' as ContentType,
     title: '',
     description: '',
     category: '',
@@ -30,6 +40,8 @@ export default function UploadPage() {
     agreeToTerms: false,
     confirmPrivacy: false,
   })
+  
+  const selectedContentType = CONTENT_TYPES.find(ct => ct.value === formData.contentType)!
   
   // 当分类变化时，重置二级分类
   const handleCategoryChange = (newCategory: string) => {
@@ -73,7 +85,7 @@ export default function UploadPage() {
       }
       
       if (!file) {
-        setError('请上传Memory文件')
+        setError(`请上传${selectedContentType.labelZh}文件`)
         return
       }
       
@@ -111,6 +123,7 @@ export default function UploadPage() {
           file_path: fileName,
           preview_content: formData.previewContent,
           platform: formData.platform,
+          content_type: formData.contentType,
           status: 'active',
         })
       
@@ -124,10 +137,81 @@ export default function UploadPage() {
     }
   }
   
+  // Step 1: Choose content type
+  if (step === 'type') {
+    return (
+      <div className="container mx-auto py-8 px-4 max-w-3xl">
+        <h1 className="text-3xl font-bold mb-2">发布内容</h1>
+        <p className="text-gray-500 mb-8">选择你要发布的内容类型</p>
+        
+        <div className="grid gap-4">
+          {CONTENT_TYPES.map((ct) => (
+            <Card 
+              key={ct.value}
+              className={`cursor-pointer transition-all hover:shadow-lg hover:border-purple-300 ${
+                formData.contentType === ct.value ? 'ring-2 ring-purple-500 border-purple-500' : ''
+              }`}
+              onClick={() => setFormData(prev => ({ ...prev, contentType: ct.value }))}
+            >
+              <CardContent className="p-6 flex items-start gap-4">
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-white ${
+                  ct.value === 'memory' ? 'bg-gradient-to-br from-purple-500 to-pink-500' :
+                  ct.value === 'skill' ? 'bg-gradient-to-br from-amber-500 to-orange-500' :
+                  'bg-gradient-to-br from-blue-500 to-cyan-500'
+                }`}>
+                  <span className="text-2xl">{ct.emoji}</span>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-lg">{ct.labelZh}</h3>
+                    <span className="text-sm text-gray-400">({ct.label})</span>
+                    {formData.contentType === ct.value && (
+                      <Check className="w-5 h-5 text-purple-500 ml-auto" />
+                    )}
+                  </div>
+                  <p className="text-gray-600 mb-2">{ct.descriptionZh}</p>
+                  <p className="text-xs text-gray-400">支持格式：{ct.formatHint}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        
+        <Button 
+          size="lg" 
+          className="w-full mt-6 bg-gradient-to-r from-purple-600 to-pink-500 border-0"
+          onClick={() => setStep('details')}
+        >
+          继续
+        </Button>
+      </div>
+    )
+  }
+  
+  // Step 2: Details form
   return (
     <div className="container mx-auto py-8 px-4 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-2">上传Memory</h1>
-      <p className="text-gray-500 mb-8">分享你调教好的AI记忆，让它帮助更多人</p>
+      <button 
+        onClick={() => setStep('type')}
+        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        返回选择类型
+      </button>
+      
+      <div className="flex items-center gap-3 mb-6">
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white ${
+          formData.contentType === 'memory' ? 'bg-gradient-to-br from-purple-500 to-pink-500' :
+          formData.contentType === 'skill' ? 'bg-gradient-to-br from-amber-500 to-orange-500' :
+          'bg-gradient-to-br from-blue-500 to-cyan-500'
+        }`}>
+          <span className="text-xl">{selectedContentType.emoji}</span>
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold">上传{selectedContentType.labelZh}</h1>
+          <p className="text-gray-500 text-sm">{selectedContentType.descriptionZh}</p>
+        </div>
+      </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
@@ -140,9 +224,9 @@ export default function UploadPage() {
         {/* File upload */}
         <Card>
           <CardHeader>
-            <CardTitle>Memory文件</CardTitle>
+            <CardTitle>{selectedContentType.labelZh}文件</CardTitle>
             <CardDescription>
-              从ChatGPT设置中导出的Memory文件（JSON格式）
+              {selectedContentType.formatHint}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -158,7 +242,7 @@ export default function UploadPage() {
               <input
                 type="file"
                 className="hidden"
-                accept=".json,.txt"
+                accept={selectedContentType.acceptFormats}
                 onChange={handleFileChange}
               />
             </label>
@@ -175,7 +259,11 @@ export default function UploadPage() {
               <label className="block text-sm font-medium mb-1">标题 *</label>
               <Input
                 required
-                placeholder="例如：资深前端开发助手"
+                placeholder={
+                  formData.contentType === 'memory' ? '例如：资深前端开发助手的记忆' :
+                  formData.contentType === 'skill' ? '例如：SEO优化专家技能包' :
+                  '例如：温柔知性的AI伴侣'
+                }
                 value={formData.title}
                 onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
               />
@@ -184,8 +272,8 @@ export default function UploadPage() {
             <div>
               <label className="block text-sm font-medium mb-1">描述</label>
               <textarea
-                className="w-full h-32 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="描述这个Memory的特点、适用场景..."
+                className="w-full h-32 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder={`描述这个${selectedContentType.labelZh}的特点、适用场景...`}
                 value={formData.description}
                 onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
               />
@@ -195,7 +283,7 @@ export default function UploadPage() {
               <div>
                 <label className="block text-sm font-medium mb-1">分类</label>
                 <select
-                  className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={formData.category}
                   onChange={e => handleCategoryChange(e.target.value)}
                 >
@@ -211,7 +299,7 @@ export default function UploadPage() {
               <div>
                 <label className="block text-sm font-medium mb-1">二级分类</label>
                 <select
-                  className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   value={formData.subcategory}
                   onChange={e => setFormData(prev => ({ ...prev, subcategory: e.target.value }))}
                   disabled={!formData.category || availableSubcategories.length === 0}
@@ -227,9 +315,9 @@ export default function UploadPage() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">平台</label>
+              <label className="block text-sm font-medium mb-1">适用平台</label>
               <select
-                className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 value={formData.platform}
                 onChange={e => setFormData(prev => ({ ...prev, platform: e.target.value as Platform }))}
               >
@@ -288,7 +376,7 @@ export default function UploadPage() {
                 onChange={e => setFormData(prev => ({ ...prev, confirmPrivacy: e.target.checked }))}
               />
               <span className="text-sm">
-                我确认已检查并清除Memory文件中的个人敏感信息（如姓名、地址、联系方式等），并对上传内容负全部责任
+                我确认已检查并清除文件中的个人敏感信息（如姓名、地址、联系方式等），并对上传内容负全部责任
               </span>
             </label>
             
@@ -306,8 +394,8 @@ export default function UploadPage() {
           </CardContent>
         </Card>
         
-        <Button type="submit" size="lg" className="w-full" disabled={loading}>
-          {loading ? '上传中...' : '发布Memory'}
+        <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-purple-600 to-pink-500 border-0" disabled={loading}>
+          {loading ? '上传中...' : `发布${selectedContentType.labelZh}`}
         </Button>
       </form>
     </div>
