@@ -142,14 +142,8 @@ export default function CloudDashboardPage() {
   }
 
   function handleDownload(memory: CloudMemory) {
-    const content = memory.content?.raw || JSON.stringify(memory.content, null, 2)
-    const blob = new Blob([content], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${memory.platform}-memory-${memory.account_label || 'default'}.json`
-    a.click()
-    URL.revokeObjectURL(url)
+    // 使用 API 下载，确保获取完整内容
+    window.location.href = `/api/cloud/memories/${memory.id}/download`
   }
 
   function formatTime(dateString: string | null) {
