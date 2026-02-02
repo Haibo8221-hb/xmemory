@@ -22,8 +22,8 @@ export const CONTENT_TYPES = [
     emoji: '⚡',
     description: 'Specialized prompts and instructions',
     descriptionZh: '专业提示词和指令集',
-    acceptFormats: '.md,.txt,.zip',
-    formatHint: 'Markdown (SKILL.md) 或 ZIP 包',
+    acceptFormats: '.skill,.md,.txt,.zip',
+    formatHint: '.skill (Claude导出) / Markdown / ZIP包',
   },
   { 
     value: 'profile' as ContentType, 
