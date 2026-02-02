@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatPrice, formatDate } from '@/lib/utils'
 import { CATEGORIES } from '@/types/database'
-import { Download, ExternalLink } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
+import { DownloadButton } from '@/components/memory/download-button'
 
 export default async function PurchasesPage() {
   const supabase = await createClient()
@@ -62,10 +63,10 @@ export default async function PurchasesPage() {
                       <p className="text-lg font-bold mb-2">
                         {formatPrice(order.amount)}
                       </p>
-                      <Button size="sm">
-                        <Download className="w-4 h-4 mr-1" />
-                        下载
-                      </Button>
+                      <DownloadButton 
+                        filePath={memory?.file_path || ''} 
+                        filename={`${memory?.title || 'memory'}.json`}
+                      />
                     </div>
                   </div>
                 </CardContent>

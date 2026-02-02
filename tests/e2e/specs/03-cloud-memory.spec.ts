@@ -115,18 +115,27 @@ test.describe('Cloud Memory - Authenticated', () => {
     // Wait for memories to load
     await page.waitForLoadState('networkidle')
     
-    // Find download button
-    const downloadButton = page.locator('button').filter({ hasText: /download/i }).first()
+    // Check if there are any memories first
+    const emptyState = page.locator('text=/no.*memor|还没有/i')
+    const hasMemories = !(await emptyState.isVisible().catch(() => false))
     
-    if (await downloadButton.isVisible()) {
-      // Set up download handler
-      const downloadPromise = page.waitForEvent('download', { timeout: 10000 })
-      
-      await downloadButton.click()
-      
-      const download = await downloadPromise
-      expect(download.suggestedFilename()).toMatch(/\.json$/i)
+    if (!hasMemories) {
+      // No memories to download - skip with explicit message
+      test.skip(true, 'No memories available to test download')
+      return
     }
+    
+    // Find download button - should exist if we have memories
+    const downloadButton = page.locator('button').filter({ hasText: /download|下载/i }).first()
+    await expect(downloadButton).toBeVisible({ timeout: 5000 })
+    
+    // Set up download handler
+    const downloadPromise = page.waitForEvent('download', { timeout: 10000 })
+    
+    await downloadButton.click()
+    
+    const download = await downloadPromise
+    expect(download.suggestedFilename()).toMatch(/\.json$/i)
   })
 
   test('can view version history', async ({ page }) => {
@@ -134,15 +143,23 @@ test.describe('Cloud Memory - Authenticated', () => {
     
     await page.waitForLoadState('networkidle')
     
-    // Find history button/link
-    const historyLink = page.locator('a, button').filter({ hasText: /history|版本|历史/i }).first()
+    // Check if there are any memories first
+    const emptyState = page.locator('text=/no.*memor|还没有/i')
+    const hasMemories = !(await emptyState.isVisible().catch(() => false))
     
-    if (await historyLink.isVisible()) {
-      await historyLink.click()
-      
-      // Should navigate to history page
-      await page.waitForURL(/history/i, { timeout: 10000 })
+    if (!hasMemories) {
+      test.skip(true, 'No memories available to test history')
+      return
     }
+    
+    // Find history button/link - should exist if we have memories
+    const historyLink = page.locator('a, button').filter({ hasText: /history|版本|历史/i }).first()
+    await expect(historyLink).toBeVisible({ timeout: 5000 })
+    
+    await historyLink.click()
+    
+    // Should navigate to history page
+    await page.waitForURL(/history/i, { timeout: 10000 })
   })
 
   test('can delete memory', async ({ page }) => {
@@ -150,18 +167,35 @@ test.describe('Cloud Memory - Authenticated', () => {
     
     await page.waitForLoadState('networkidle')
     
-    // Find delete button
-    const deleteButton = page.locator('button').filter({ hasText: /delete|删除/i }).first()
+    // Check if there are any memories first
+    const emptyState = page.locator('text=/no.*memor|还没有/i')
+    const hasMemories = !(await emptyState.isVisible().catch(() => false))
     
-    if (await deleteButton.isVisible()) {
-      // Set up dialog handler
-      page.on('dialog', dialog => dialog.accept())
-      
-      await deleteButton.click()
-      
-      // Wait for deletion (page refresh or item removal)
-      await page.waitForTimeout(2000)
+    if (!hasMemories) {
+      test.skip(true, 'No memories available to test delete')
+      return
     }
+    
+    // Count memories before delete
+    const memoryCards = page.locator('[class*="rounded-xl"][class*="border"]')
+    const countBefore = await memoryCards.count()
+    
+    // Find delete button - should exist if we have memories
+    const deleteButton = page.locator('button').filter({ has: page.locator('svg.text-red-500, [class*="text-red"]') }).first()
+    await expect(deleteButton).toBeVisible({ timeout: 5000 })
+    
+    // Set up dialog handler
+    page.on('dialog', dialog => dialog.accept())
+    
+    await deleteButton.click()
+    
+    // Wait for deletion and verify item was removed
+    await page.waitForTimeout(2000)
+    const countAfter = await memoryCards.count()
+    
+    // Either count decreased or empty state appeared
+    const isEmpty = await emptyState.isVisible().catch(() => false)
+    expect(countAfter < countBefore || isEmpty).toBeTruthy()
   })
 })
 
