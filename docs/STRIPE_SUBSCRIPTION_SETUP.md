@@ -6,23 +6,26 @@
 
 ### Pro Monthly (月付)
 - **Name**: xmemory Pro Monthly
-- **Price**: ¥35/month (或 $5/month)
+- **Price**: $2/month
 - **Billing period**: Monthly
-- **Price ID**: 复制保存 (格式: `price_xxxxx`)
+- **Product ID**: `prod_Tu9CA7CYKPkMtL` (Test)
+- **Price ID**: `price_1SwKu6Pj32HCeBo9OD1aumFT` (Test)
 
 ### Pro Annual (年付)
 - **Name**: xmemory Pro Annual
-- **Price**: ¥336/year (或 $48/year，相当于 $4/month)
+- **Price**: $10/year (Save 17% - $0.83/month)
 - **Billing period**: Yearly
-- **Price ID**: 复制保存 (格式: `price_xxxxx`)
+- **Product ID**: `prod_Tu9EUFxtmNONvQ` (Test)
+- **Price ID**: `price_1SwKvhPj32HCeBo9ohUYTJnG` (Test)
 
 ## 2. 配置环境变量
 
 在 Vercel Dashboard → Settings → Environment Variables 添加:
 
 ```
-STRIPE_PRO_MONTHLY_PRICE_ID=price_xxxxx
-STRIPE_PRO_ANNUAL_PRICE_ID=price_xxxxx
+# Test Mode
+STRIPE_PRO_MONTHLY_PRICE_ID=price_1SwKu6Pj32HCeBo9OD1aumFT
+STRIPE_PRO_ANNUAL_PRICE_ID=price_1SwKvhPj32HCeBo9ohUYTJnG
 ```
 
 ## 3. 配置 Webhook

@@ -52,7 +52,7 @@ export default function PricingPage() {
       subtitle: 'Start free, upgrade when you need more',
       monthly: 'Monthly',
       annually: 'Annually',
-      savePercent: 'Save 20%',
+      savePercent: 'Save 58%',
       
       // Free Plan
       freeTitle: 'Free',
@@ -69,8 +69,8 @@ export default function PricingPage() {
       
       // Pro Plan
       proTitle: 'Pro',
-      proPrice: '$5',
-      proPriceAnnual: '$4',
+      proPrice: '$2',
+      proPriceAnnual: '$0.83',
       proDesc: 'For power users who need more',
       proFeatures: [
         'Unlimited Memory slots',
@@ -108,7 +108,7 @@ export default function PricingPage() {
       subtitle: '免费开始，按需升级',
       monthly: '月付',
       annually: '年付',
-      savePercent: '省 20%',
+      savePercent: '省 58%',
       
       freeTitle: '免费版',
       freePrice: '¥0',
@@ -123,8 +123,8 @@ export default function PricingPage() {
       freeCta: '免费开始',
       
       proTitle: 'Pro 专业版',
-      proPrice: '¥35',
-      proPriceAnnual: '¥28',
+      proPrice: '$2',
+      proPriceAnnual: '$0.83',
       proDesc: '为需要更多功能的用户',
       proFeatures: [
         '无限 Memory 槽位',
