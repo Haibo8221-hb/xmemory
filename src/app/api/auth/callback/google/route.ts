@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!
@@ -100,13 +102,10 @@ export async function GET(request: NextRequest) {
       userId = newUser.user.id
     }
     
-    // Generate a session link for the user
+    // Generate magic link token
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
       email: googleUser.email,
-      options: {
-        redirectTo: `${baseUrl}${redirectTo}`,
-      },
     })
     
     if (linkError || !linkData) {
@@ -114,15 +113,94 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${baseUrl}/auth/login?error=session_failed`)
     }
     
-    // Extract token from magic link and redirect
+    // Extract token from magic link
     const magicLinkUrl = new URL(linkData.properties.action_link)
     const token = magicLinkUrl.searchParams.get('token')
-    const type = magicLinkUrl.searchParams.get('type')
+    const type = magicLinkUrl.searchParams.get('type') as 'magiclink'
     
-    // Redirect to Supabase auth callback to establish session
-    const callbackUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/verify?token=${token}&type=${type}&redirect_to=${encodeURIComponent(baseUrl + redirectTo)}`
+    if (!token) {
+      console.error('No token in magic link')
+      return NextResponse.redirect(`${baseUrl}/auth/login?error=no_token`)
+    }
     
-    return NextResponse.redirect(callbackUrl)
+    // Create a Supabase client that can set cookies
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options)
+            })
+          },
+        },
+      }
+    )
+    
+    // Verify the OTP token to establish session (this sets cookies automatically)
+    const { data: sessionData, error: verifyError } = await supabase.auth.verifyOtp({
+      token_hash: token,
+      type: 'magiclink',
+    })
+    
+    if (verifyError || !sessionData.session) {
+      console.error('Session verification failed:', verifyError)
+      return NextResponse.redirect(`${baseUrl}/auth/login?error=verify_failed`)
+    }
+    
+    // Create response with redirect
+    const response = NextResponse.redirect(`${baseUrl}${redirectTo}`)
+    
+    // Manually set the session cookies on the response as well
+    // This ensures they're sent with the redirect
+    const { access_token, refresh_token } = sessionData.session
+    const maxAge = 60 * 60 * 24 * 365 // 1 year
+    
+    // Set Supabase auth cookies
+    response.cookies.set('sb-access-token', access_token, {
+      path: '/',
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      maxAge,
+    })
+    
+    response.cookies.set('sb-refresh-token', refresh_token, {
+      path: '/',
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      maxAge,
+    })
+    
+    // Also set the combined auth token cookie that Supabase SSR expects
+    const projectRef = process.env.NEXT_PUBLIC_SUPABASE_URL!.match(/https:\/\/([^.]+)/)?.[1]
+    if (projectRef) {
+      const cookieName = `sb-${projectRef}-auth-token`
+      const cookieValue = JSON.stringify({
+        access_token,
+        refresh_token,
+        expires_at: sessionData.session.expires_at,
+        expires_in: sessionData.session.expires_in,
+        token_type: 'bearer',
+        user: sessionData.session.user,
+      })
+      
+      response.cookies.set(cookieName, cookieValue, {
+        path: '/',
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+        maxAge,
+      })
+    }
+    
+    return response
     
   } catch (error) {
     console.error('OAuth callback error:', error)
