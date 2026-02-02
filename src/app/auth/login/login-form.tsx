@@ -42,13 +42,9 @@ export default function LoginForm() {
     }
   }
   
-  const handleGoogleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}`,
-      },
-    })
+  const handleGoogleLogin = () => {
+    // Use custom OAuth flow to show xmemory.work instead of supabase.co
+    window.location.href = `/api/auth/google?redirect=${encodeURIComponent(redirect)}`
   }
   
   return (
