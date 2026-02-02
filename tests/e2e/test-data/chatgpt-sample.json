@@ -1,0 +1,23 @@
+[
+  {
+    "id": "test-mem-001",
+    "key": "User Name",
+    "value": "E2E Test User",
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "test-mem-002",
+    "key": "Communication Preference",
+    "value": "Prefers concise, direct responses. Uses technical terminology when appropriate.",
+    "created_at": "2024-01-02T00:00:00.000Z",
+    "updated_at": "2024-01-02T00:00:00.000Z"
+  },
+  {
+    "id": "test-mem-003",
+    "key": "Project Context",
+    "value": "Working on xmemory project - a cloud-based memory management platform for AI chat histories.",
+    "created_at": "2024-01-03T00:00:00.000Z",
+    "updated_at": "2024-01-03T00:00:00.000Z"
+  }
+]

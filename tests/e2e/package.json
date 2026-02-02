@@ -1,0 +1,21 @@
+{
+  "name": "xmemory-e2e-tests",
+  "version": "1.0.0",
+  "description": "End-to-end tests for xmemory.work",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:public": "playwright test specs/01-public-pages.spec.ts",
+    "test:auth": "playwright test specs/02-auth.spec.ts",
+    "test:cloud": "playwright test specs/03-cloud-memory.spec.ts",
+    "report": "playwright show-report",
+    "codegen": "playwright codegen https://xmemory.work"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}
