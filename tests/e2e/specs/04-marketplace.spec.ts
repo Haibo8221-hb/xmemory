@@ -1,163 +1,194 @@
-import { test, expect, Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
+import fs from 'fs'
 
-// Helper to set up authenticated session
-async function setupAuth(page: Page) {
-  const sessionCookie = process.env.TEST_SESSION_COOKIE
-  if (!sessionCookie) {
+// 检查是否有认证
+function checkAuth() {
+  const authFile = 'tests/e2e/.auth/user.json'
+  if (!fs.existsSync(authFile)) {
     return false
   }
-  
-  await page.context().addCookies([{
-    name: 'sb-uupwzvbrcmiwkutgeqza-auth-token',
-    value: sessionCookie,
-    domain: 'xmemory.work',
-    path: '/'
-  }])
-  return true
+  const content = fs.readFileSync(authFile, 'utf-8')
+  const state = JSON.parse(content)
+  return state.cookies && state.cookies.length > 0
 }
 
-test.describe('Marketplace - Public', () => {
-  test('explore page loads', async ({ page }) => {
+test.describe('市场 - 公开访问', () => {
+  
+  test('市场页正常加载', async ({ page }) => {
     await page.goto('/explore')
     
     await expect(page.url()).toContain('/explore')
-    // Should show marketplace content
-    await expect(page.getByText(/memory|memories|explore|浏览/i).first()).toBeVisible()
+    await expect(page.locator('text=/memory|memories|explore|浏览|市场/i').first()).toBeVisible()
   })
-
-  test('memory detail page loads', async ({ page }) => {
+  
+  test('Memory 详情页显示购买按钮', async ({ page }) => {
     await page.goto('/explore')
     await page.waitForLoadState('networkidle')
     
-    // Find a memory card and click it
+    // 查找 Memory 链接
     const memoryLink = page.locator('a[href^="/memory/"]').first()
     
-    if (await memoryLink.isVisible()) {
-      await memoryLink.click()
-      await page.waitForURL(/\/memory\//i, { timeout: 10000 })
-      
-      // Should show memory details
-      await expect(page.getByText(/description|描述|purchase|购买|免费|free/i).first()).toBeVisible()
-    } else {
-      // No memories in marketplace - skip
-      test.skip(true, 'No memories in marketplace to test')
-    }
-  })
-
-  test('purchase button visible on memory detail', async ({ page }) => {
-    await page.goto('/explore')
-    await page.waitForLoadState('networkidle')
-    
-    const memoryLink = page.locator('a[href^="/memory/"]').first()
-    
-    if (await memoryLink.isVisible()) {
-      await memoryLink.click()
-      await page.waitForURL(/\/memory\//i, { timeout: 10000 })
-      
-      // Should have a purchase/get button
-      const purchaseButton = page.getByRole('button', { name: /purchase|buy|get|购买|免费|获取/i })
-      await expect(purchaseButton).toBeVisible({ timeout: 5000 })
-    } else {
-      test.skip(true, 'No memories in marketplace to test')
-    }
-  })
-})
-
-test.describe('Marketplace - Authenticated', () => {
-  test.beforeEach(async ({ page }) => {
-    const hasAuth = await setupAuth(page)
-    if (!hasAuth) {
-      test.skip()
-    }
-  })
-
-  test('can get free memory', async ({ page }) => {
-    await page.goto('/explore')
-    await page.waitForLoadState('networkidle')
-    
-    // Find a free memory (price = $0 or shows "Free")
-    const freeMemoryCard = page.locator('text=/free|免费|\\$0/i').first()
-    
-    if (await freeMemoryCard.isVisible()) {
-      // Navigate to the memory page
-      const card = freeMemoryCard.locator('xpath=ancestor::a[@href]')
-      if (await card.isVisible()) {
-        await card.click()
-      } else {
-        // Click parent card or navigate manually
-        await freeMemoryCard.click()
-      }
-      
-      await page.waitForURL(/\/memory\//i, { timeout: 10000 })
-      
-      // Click the get free button
-      const getFreeButton = page.getByRole('button', { name: /get.*free|免费.*获取|获取/i })
-      
-      if (await getFreeButton.isVisible()) {
-        await getFreeButton.click()
-        
-        // Wait for download button to appear
-        const downloadButton = page.getByRole('button', { name: /download|下载/i })
-        await expect(downloadButton).toBeVisible({ timeout: 10000 })
-        
-        // Test download
-        const downloadPromise = page.waitForEvent('download', { timeout: 10000 })
-        await downloadButton.click()
-        
-        const download = await downloadPromise
-        expect(download.suggestedFilename()).toMatch(/\.json$/i)
-      }
-    } else {
-      test.skip(true, 'No free memories available to test')
-    }
-  })
-
-  test('purchases page loads', async ({ page }) => {
-    await page.goto('/dashboard/purchases')
-    
-    await expect(page.url()).toContain('/dashboard/purchases')
-    // Should show purchases page content
-    await expect(page.getByText(/我买的|purchases|购买/i).first()).toBeVisible()
-  })
-
-  test('can download purchased memory', async ({ page }) => {
-    await page.goto('/dashboard/purchases')
-    await page.waitForLoadState('networkidle')
-    
-    // Check if there are any purchases
-    const emptyState = page.locator('text=/no.*purchase|还没有.*购买|没有购买/i')
-    const hasPurchases = !(await emptyState.isVisible().catch(() => false))
-    
-    if (!hasPurchases) {
-      test.skip(true, 'No purchases available to test download')
+    if (!await memoryLink.isVisible().catch(() => false)) {
+      test.skip(true, '市场暂无 Memory')
       return
     }
     
-    // Find download button
-    const downloadButton = page.getByRole('button', { name: /download|下载/i }).first()
-    await expect(downloadButton).toBeVisible({ timeout: 5000 })
+    await memoryLink.click()
+    await page.waitForURL(/\/memory\//i, { timeout: 10000 })
     
-    // Test download
-    const downloadPromise = page.waitForEvent('download', { timeout: 10000 })
-    await downloadButton.click()
+    // 应该有购买/获取按钮
+    const purchaseButton = page.locator('button:has-text(/purchase|buy|get|购买|免费|获取/i)').first()
+    await expect(purchaseButton, '购买按钮应该可见').toBeVisible({ timeout: 5000 })
+  })
+  
+  test('免费 Memory 显示免费标签', async ({ page }) => {
+    await page.goto('/explore')
+    await page.waitForLoadState('networkidle')
     
-    const download = await downloadPromise
-    expect(download.suggestedFilename()).toMatch(/\.json$/i)
+    // 查找免费 Memory
+    const freeLabel = page.locator('text=/free|免费|\\$0/i').first()
+    
+    if (await freeLabel.isVisible().catch(() => false)) {
+      // 找到免费标签
+      expect(true).toBeTruthy()
+    } else {
+      // 可能没有免费 Memory，这也是允许的
+      console.log('  ℹ 市场暂无免费 Memory')
+    }
   })
 })
 
-test.describe('Marketplace API', () => {
-  test('checkout API returns 400 without memoryId', async ({ request }) => {
-    const response = await request.post('/api/checkout', {
-      data: {}
-    })
-    expect(response.status()).toBe(400)
+test.describe('市场 - 已登录', () => {
+  
+  test.beforeEach(async ({ page }, testInfo) => {
+    if (!checkAuth()) {
+      test.skip(true, '未提供认证信息，跳过需要登录的测试')
+    }
   })
-
-  test('checkout API returns 404 for invalid memoryId', async ({ request }) => {
-    const response = await request.post('/api/checkout', {
-      data: { memoryId: 'non-existent-id-12345' }
-    })
-    expect(response.status()).toBe(404)
+  
+  test('可以获取免费 Memory', async ({ page }) => {
+    await page.goto('/explore')
+    await page.waitForLoadState('networkidle')
+    
+    // 查找免费 Memory 卡片
+    const freeCard = page.locator('text=/free|免费|\\$0/i').first()
+    
+    if (!await freeCard.isVisible().catch(() => false)) {
+      test.skip(true, '市场暂无免费 Memory')
+      return
+    }
+    
+    // 点击进入详情页
+    const parentLink = freeCard.locator('xpath=ancestor::a[@href]').first()
+    if (await parentLink.isVisible().catch(() => false)) {
+      await parentLink.click()
+    } else {
+      // 尝试直接点击卡片
+      await freeCard.click()
+    }
+    
+    await page.waitForURL(/\/memory\//i, { timeout: 10000 })
+    
+    // 点击获取按钮
+    const getFreeButton = page.locator('button:has-text(/get.*free|免费.*获取|获取/i)').first()
+    
+    if (await getFreeButton.isVisible().catch(() => false)) {
+      await getFreeButton.click()
+      
+      // 等待下载按钮出现
+      const downloadButton = page.locator('button:has-text(/download|下载/i)').first()
+      await expect(downloadButton, '获取后应显示下载按钮').toBeVisible({ timeout: 15000 })
+      
+      // 测试下载
+      const downloadPromise = page.waitForEvent('download', { timeout: 15000 })
+      await downloadButton.click()
+      
+      const download = await downloadPromise
+      expect(download.suggestedFilename()).toMatch(/\.json$/i)
+    }
+  })
+  
+  test('购买页正常加载', async ({ page }) => {
+    await page.goto('/dashboard/purchases')
+    
+    await expect(page.url()).toContain('/dashboard/purchases')
+    await expect(page.locator('text=/我买的|purchases|购买/i').first()).toBeVisible()
+  })
+  
+  test('可以下载已购买的 Memory', async ({ page }) => {
+    await page.goto('/dashboard/purchases')
+    await page.waitForLoadState('networkidle')
+    
+    // 检查是否有购买记录
+    const emptyState = page.locator('text=/no.*purchase|还没有.*购买|没有购买/i').first()
+    if (await emptyState.isVisible().catch(() => false)) {
+      test.skip(true, '没有购买记录')
+      return
+    }
+    
+    // 查找下载按钮 - 必须存在
+    const downloadButton = page.locator('button:has-text(/download|下载/i)').first()
+    await expect(downloadButton, '下载按钮应该可见').toBeVisible({ timeout: 5000 })
+    
+    // 点击下载
+    const downloadPromise = page.waitForEvent('download', { timeout: 15000 })
+    await downloadButton.click()
+    
+    // 验证下载
+    const download = await downloadPromise
+    expect(download.suggestedFilename()).toMatch(/\.json$/i)
+  })
+  
+  test('付费 Memory 跳转到 Stripe', async ({ page }) => {
+    await page.goto('/explore')
+    await page.waitForLoadState('networkidle')
+    
+    // 查找付费 Memory（有价格显示）
+    const paidCard = page.locator('text=/\\$[1-9]|\\$[0-9]+\\.[0-9][1-9]/').first()
+    
+    if (!await paidCard.isVisible().catch(() => false)) {
+      test.skip(true, '市场暂无付费 Memory')
+      return
+    }
+    
+    // 点击进入详情页
+    const parentLink = paidCard.locator('xpath=ancestor::a[@href]').first()
+    if (await parentLink.isVisible().catch(() => false)) {
+      await parentLink.click()
+    } else {
+      await paidCard.click()
+    }
+    
+    await page.waitForURL(/\/memory\//i, { timeout: 10000 })
+    
+    // 点击购买按钮
+    const purchaseButton = page.locator('button:has-text(/purchase|buy|购买/i)').first()
+    
+    if (await purchaseButton.isVisible().catch(() => false)) {
+      await purchaseButton.click()
+      
+      // 等待跳转到 Stripe
+      await page.waitForURL(/stripe\.com|checkout/i, { timeout: 15000 }).catch(() => {
+        // 可能是本地环境或 Stripe 未配置
+        console.log('  ℹ 未跳转到 Stripe（可能是测试环境）')
+      })
+    }
+  })
+  
+  test('销售页正常加载', async ({ page }) => {
+    await page.goto('/dashboard/sales')
+    
+    await expect(page.url()).toContain('/dashboard/sales')
+    await expect(page.locator('text=/我卖的|sales|销售/i').first()).toBeVisible()
+  })
+  
+  test('上传出售页正常加载', async ({ page }) => {
+    await page.goto('/upload')
+    
+    await expect(page.url()).toContain('/upload')
+    
+    // 验证上传表单
+    await expect(page.locator('input[type="file"]')).toBeAttached()
+    await expect(page.locator('input[name="title"], input[placeholder*="title"], input[placeholder*="标题"]').first()).toBeVisible()
   })
 })

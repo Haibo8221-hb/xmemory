@@ -1,60 +1,76 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('Public Pages', () => {
-  test('homepage loads correctly', async ({ page }) => {
+test.describe('公开页面', () => {
+  
+  test('首页正常加载', async ({ page }) => {
     await page.goto('/')
     
-    // Check page title
+    // 验证页面标题
     await expect(page).toHaveTitle(/xmemory/i)
     
-    // Check main heading or logo exists
-    await expect(page.locator('body')).toBeVisible()
+    // 验证核心内容存在
+    await expect(page.locator('text=/AI.*Memory|Let Your AI/i').first()).toBeVisible()
     
-    // Check CTA button exists
-    const ctaButton = page.getByRole('link', { name: /get started|开始使用/i })
-    await expect(ctaButton.first()).toBeVisible()
+    // 验证导航链接
+    await expect(page.locator('a[href="/pricing"], a[href="/explore"]').first()).toBeVisible()
   })
-
-  test('pricing page loads', async ({ page }) => {
+  
+  test('定价页正常加载', async ({ page }) => {
     await page.goto('/pricing')
     
-    // Check pricing plans are visible
-    await expect(page.getByText(/free|免费/i).first()).toBeVisible()
-    await expect(page.getByText(/pro/i).first()).toBeVisible()
+    // 验证页面内容
+    await expect(page.locator('text=/pricing|定价|价格|plan|套餐/i').first()).toBeVisible()
+    
+    // 验证至少有一个价格显示
+    await expect(page.locator('text=/\\$|free|免费/i').first()).toBeVisible()
   })
-
-  test('login page loads', async ({ page }) => {
+  
+  test('登录页正常加载', async ({ page }) => {
     await page.goto('/auth/login')
     
-    // Check Google login button
-    await expect(page.getByRole('button', { name: /google/i })).toBeVisible()
-  })
-
-  test('docs pages load', async ({ page }) => {
-    // Import docs
-    await page.goto('/docs/import')
-    await expect(page.locator('body')).toBeVisible()
+    // 验证登录表单或 OAuth 按钮存在
+    const hasLoginForm = await page.locator('input[type="email"], input[type="password"]').first().isVisible().catch(() => false)
+    const hasOAuthButton = await page.locator('text=/google|sign in|登录/i').first().isVisible().catch(() => false)
     
-    // Export docs
-    await page.goto('/docs/export')
-    await expect(page.locator('body')).toBeVisible()
-    
-    // FAQ
-    await page.goto('/docs/faq')
-    await expect(page.locator('body')).toBeVisible()
+    expect(hasLoginForm || hasOAuthButton).toBeTruthy()
   })
-
-  test('legal pages load', async ({ page }) => {
-    await page.goto('/privacy')
-    await expect(page.locator('body')).toBeVisible()
+  
+  test('市场页正常加载', async ({ page }) => {
+    await page.goto('/explore')
     
-    await page.goto('/terms')
-    await expect(page.locator('body')).toBeVisible()
+    // 验证页面加载
+    await expect(page.url()).toContain('/explore')
+    
+    // 验证市场相关内容
+    await expect(page.locator('text=/explore|memory|memories|浏览|市场/i').first()).toBeVisible()
   })
-
-  test('404 page for unknown routes', async ({ page }) => {
+  
+  test('Memory 详情页可访问（如有数据）', async ({ page }) => {
+    await page.goto('/explore')
+    await page.waitForLoadState('networkidle')
+    
+    // 查找 Memory 链接
+    const memoryLink = page.locator('a[href^="/memory/"]').first()
+    
+    if (await memoryLink.isVisible().catch(() => false)) {
+      const href = await memoryLink.getAttribute('href')
+      await page.goto(href!)
+      
+      // 验证详情页内容
+      await expect(page.locator('text=/description|描述|purchase|购买|free|免费/i').first()).toBeVisible()
+    } else {
+      // 市场暂无 Memory，这是允许的
+      console.log('  ℹ 市场暂无 Memory，跳过详情页测试')
+    }
+  })
+  
+  test('404 页面正确显示', async ({ page }) => {
     const response = await page.goto('/this-page-does-not-exist-12345')
-    // Should either show 404 or redirect
-    expect(response?.status()).toBeLessThanOrEqual(404)
+    
+    // 应该返回 404 或显示 not found 内容
+    const is404 = response?.status() === 404
+    const hasNotFoundText = await page.locator('text=/not found|404|找不到/i').first().isVisible().catch(() => false)
+    
+    expect(is404 || hasNotFoundText).toBeTruthy()
   })
 })

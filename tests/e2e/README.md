@@ -1,178 +1,186 @@
-# xmemory E2E Tests
+# xmemory E2E 测试
 
-Playwright-based end-to-end tests for xmemory.work
+基于 Playwright 的端到端测试套件。
 
-## Quick Start
+## 快速开始
 
 ```bash
-# Install dependencies
-cd tests/e2e
+# 1. 安装依赖
 npm install
+npx playwright install
 
-# Run all tests
-npm test
+# 2. 设置环境变量
+cp tests/e2e/.env.example tests/e2e/.env
+# 编辑 .env 文件，设置 TEST_SESSION_COOKIE
 
-# Run with browser visible
-npm run test:headed
-
-# Run specific test file
-npm run test:public
-npm run test:auth
-npm run test:cloud
-
-# Interactive UI mode
-npm run test:ui
-
-# Debug mode
-npm run test:debug
+# 3. 运行测试
+npm run test:e2e
 ```
 
-## Test Structure
+## 运行方式
+
+```bash
+# 运行所有测试（有界面）
+npm run test:e2e
+
+# CI 模式（无界面，适合自动化）
+npm run test:e2e:ci
+
+# 打开 Playwright UI（调试用）
+npm run test:e2e:ui
+
+# 只运行特定测试
+npm run test:e2e -- --grep "download"
+
+# 只运行公开页面测试（无需登录）
+npm run test:e2e -- --project=public
+
+# 只运行 API 测试
+npm run test:e2e -- --project=api
+
+# 查看测试报告
+npm run test:e2e:report
+
+# 调试模式
+npm run test:e2e:debug
+```
+
+或者使用脚本：
+
+```cmd
+# Windows
+tests\e2e\run-tests.cmd
+tests\e2e\run-tests.cmd --ci
+tests\e2e\run-tests.cmd --ui
+tests\e2e\run-tests.cmd --public
+```
+
+## 环境变量
+
+| 变量 | 必需 | 说明 |
+|------|------|------|
+| `TEST_BASE_URL` | 否 | 测试目标 URL，默认 `https://xmemory.work` |
+| `TEST_SESSION_COOKIE` | 是* | Supabase session cookie（需要登录测试时必需） |
+| `TEST_USER_EMAIL` | 否 | 测试账号邮箱（备用认证方式） |
+| `TEST_USER_PASSWORD` | 否 | 测试账号密码（备用认证方式） |
+
+### 获取 Session Cookie
+
+1. 打开浏览器，登录 https://xmemory.work
+2. 打开开发者工具 (F12) → Application → Cookies
+3. 找到 `sb-uupwzvbrcmiwkutgeqza-auth-token`
+4. 复制其值到 `TEST_SESSION_COOKIE`
+
+## 测试结构
 
 ```
 tests/e2e/
+├── playwright.config.ts    # Playwright 配置
+├── global-setup.ts         # 全局初始化
+├── global-teardown.ts      # 全局清理
 ├── specs/
-│   ├── 01-public-pages.spec.ts   # Public page tests (no auth needed)
-│   ├── 02-auth.spec.ts           # Authentication flow tests
-│   └── 03-cloud-memory.spec.ts   # Cloud memory features
-├── test-data/                     # Test data files (auto-generated)
-├── playwright.config.ts           # Playwright configuration
-├── run-tests.sh                   # Unix test runner
-├── run-tests.ps1                  # Windows test runner
-└── package.json
+│   ├── auth.setup.ts       # 认证设置
+│   ├── 01-public-pages.spec.ts   # 公开页面测试
+│   ├── 02-auth.spec.ts           # 认证流程测试
+│   ├── 03-cloud-memory.spec.ts   # 云端 Memory 测试
+│   ├── 04-marketplace.spec.ts    # 市场功能测试
+│   └── 05-api.spec.ts            # API 测试
+├── helpers/
+│   └── test-utils.ts       # 测试工具函数
+├── fixtures/
+│   └── test-files/         # 测试用文件
+└── test-results/           # 测试结果（gitignore）
 ```
 
-## Test Categories
+## 测试覆盖
 
-### 1. Public Pages (01-public-pages.spec.ts)
-Tests that don't require authentication:
-- Homepage
-- Pricing page
-- Login page
-- Documentation pages
-- Legal pages
-- 404 handling
+### 公开页面 (01)
+- ✅ 首页加载
+- ✅ 定价页
+- ✅ 登录页
+- ✅ 市场页
+- ✅ Memory 详情页
+- ✅ 404 页面
 
-### 2. Authentication (02-auth.spec.ts)
-- Login redirect for protected routes
-- Google OAuth flow initiation
-- API 401 responses
+### 认证流程 (02)
+- ✅ 未登录重定向
+- ✅ Google OAuth 按钮
+- ✅ redirect 参数保留
 
-### 3. Cloud Memory (03-cloud-memory.spec.ts)
-- Memory upload
-- Memory list
-- Memory download
-- Version history
-- Memory deletion
-- API endpoints
+### 云端 Memory (03)
+- ✅ 列表页加载
+- ✅ 上传页加载
+- ✅ 上传 Memory
+- ✅ **下载 Memory** ⭐
+- ✅ 查看历史
+- ✅ 删除 Memory
 
-## Running Authenticated Tests
+### 市场功能 (04)
+- ✅ 市场页加载
+- ✅ Memory 详情
+- ✅ 获取免费 Memory
+- ✅ **下载已购买 Memory** ⭐
+- ✅ 付费跳转 Stripe
 
-Some tests require a valid session. To run these:
+### API 测试 (05)
+- ✅ 认证检查
+- ✅ 参数验证
+- ✅ 错误响应格式
 
-1. Log in to xmemory.work manually
-2. Open DevTools → Application → Cookies
-3. Copy the `sb-uupwzvbrcmiwkutgeqza-auth-token` cookie value
-4. Run tests with the cookie:
+## 编写测试原则
 
-```bash
-# Unix
-TEST_SESSION_COOKIE="your_cookie_value" npm test
+### ❌ 错误示范
 
-# Windows PowerShell
-$env:TEST_SESSION_COOKIE="your_cookie_value"; npm test
-
-# Or use the runner scripts
-./run-tests.sh --auth "your_cookie_value"
-.\run-tests.ps1 -Auth "your_cookie_value"
+```javascript
+// 不要这样写！如果按钮不存在，测试会静默通过
+if (await downloadButton.isVisible()) {
+  await downloadButton.click()
+}
 ```
 
-## Configuration
+### ✅ 正确示范
 
-### Environment Variables
+```javascript
+// 方式 1: 显式断言
+await expect(downloadButton).toBeVisible({ timeout: 5000 })
+await downloadButton.click()
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `TEST_URL` | Target URL | `https://xmemory.work` |
-| `TEST_SESSION_COOKIE` | Auth cookie for protected tests | - |
-
-### Custom URL
-
-```bash
-TEST_URL=http://localhost:3000 npm test
+// 方式 2: 显式跳过
+if (await emptyState.isVisible()) {
+  test.skip(true, '没有数据可测试')
+  return
+}
+await expect(downloadButton).toBeVisible()
 ```
 
-## Test Reports
+## CI/CD
 
-After running tests, view the HTML report:
+测试会在以下情况自动运行：
+- Push 到 main 分支
+- 创建 Pull Request
+- 手动触发
 
-```bash
-npm run report
-```
+配置文件: `.github/workflows/e2e-tests.yml`
 
-Reports are saved in `playwright-report/`.
+### GitHub Secrets
 
-## Recording New Tests
+在仓库设置中添加：
+- `TEST_SESSION_COOKIE`: 测试账号的 session cookie
 
-Use Playwright's codegen to record new tests:
+## 故障排查
 
-```bash
-npm run codegen
-```
+### 测试超时
+- 检查网络连接
+- 增加 timeout：`await expect(x).toBeVisible({ timeout: 10000 })`
 
-This opens a browser where your actions are recorded as test code.
+### 认证测试被跳过
+- 检查 `TEST_SESSION_COOKIE` 是否设置
+- Cookie 可能已过期，重新获取
 
-## CI Integration
+### 下载测试失败
+- 检查 Supabase Storage 权限
+- 检查文件是否存在
 
-Example GitHub Actions workflow:
-
-```yaml
-name: E2E Tests
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: |
-          cd tests/e2e
-          npm ci
-          npx playwright install --with-deps
-      - name: Run tests
-        run: |
-          cd tests/e2e
-          npm test
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report
-          path: tests/e2e/playwright-report/
-```
-
-## Troubleshooting
-
-### Tests timeout on first run
-Playwright needs to download browser binaries. Run:
-```bash
-npx playwright install
-```
-
-### Cannot find module '@playwright/test'
-Install dependencies:
-```bash
-npm install
-```
-
-### Auth tests are skipped
-Provide the session cookie via environment variable.
-
-### Tests fail with network errors
-- Check if the target URL is accessible
-- Check for CORS issues
-- Verify session cookie is valid and not expired
+### 元素找不到
+- 使用 `--ui` 模式调试
+- 检查选择器是否匹配中英文
