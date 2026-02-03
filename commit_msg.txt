@@ -1,1 +1,5 @@
-rename: Library to My
+feat: add email upload support (upload@xmemory.work)
+
+- Add /api/email-upload endpoint for Cloudflare Email Worker
+- Add Cloudflare Email Worker script
+- Add EMAIL_UPLOAD.md documentation
