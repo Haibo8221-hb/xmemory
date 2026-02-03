@@ -1,5 +1,6 @@
-feat: add email upload support (upload@xmemory.work)
+feat: add user settings page with email binding
 
-- Add /api/email-upload endpoint for Cloudflare Email Worker
-- Add Cloudflare Email Worker script
-- Add EMAIL_UPLOAD.md documentation
+- Create /dashboard/settings page
+- Add email field for email upload matching
+- Show user ID for subaddress upload
+- Add Settings link in header dropdown

@@ -200,6 +200,14 @@ export function Header() {
                       <Upload className="w-4 h-4 text-gray-400" />
                       {txt.mySales}
                     </Link>
+                    <Link 
+                      href="/dashboard/settings" 
+                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50"
+                      onClick={() => setShowDropdown(false)}
+                    >
+                      <Settings className="w-4 h-4 text-gray-400" />
+                      {txt.settings}
+                    </Link>
                     
                     <hr className="my-2 border-gray-100" />
                     
