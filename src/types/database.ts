@@ -43,6 +43,7 @@ export interface Profile {
   display_name: string | null
   avatar_url: string | null
   bio: string | null
+  email: string | null // For email upload matching
   stripe_account_id: string | null
   is_verified: boolean
   sales_count: number

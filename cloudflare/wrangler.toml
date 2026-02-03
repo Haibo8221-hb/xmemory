@@ -1,0 +1,15 @@
+# xmemory Email Upload Worker
+name = "xmemory-email-worker"
+main = "email-worker.js"
+compatibility_date = "2024-01-01"
+
+# Email routing - this worker handles emails
+[triggers]
+# No HTTP triggers, only email
+
+# Environment variables (set in Cloudflare Dashboard or via wrangler secret)
+# EMAIL_UPLOAD_SECRET - auth token for API
+# API_URL - xmemory API endpoint (defaults to https://xmemory.work/api/email-upload)
+
+[vars]
+API_URL = "https://xmemory.work/api/email-upload"
