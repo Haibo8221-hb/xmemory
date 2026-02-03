@@ -20,7 +20,7 @@ export function Header() {
 
   const texts = {
     en: {
-      memoryBank: 'Memory Bank',
+      memoryBank: 'My Library',
       explore: 'Explore',
       upload: 'Upload',
       dashboard: 'Dashboard',
@@ -33,7 +33,7 @@ export function Header() {
       search: 'Search',
     },
     zh: {
-      memoryBank: 'Memory Bank',
+      memoryBank: '内容库',
       explore: '浏览市场',
       upload: '上传',
       dashboard: '控制台',
