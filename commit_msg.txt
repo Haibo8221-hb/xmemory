@@ -1,7 +1,1 @@
-feat: unify upload flow with AI auto-fill, rename Memory Bank to Library
-
-- Merge /upload and /import into single unified /upload entry
-- Add AI analysis API to auto-generate title, description, category
-- Simplify upload form with AI pre-fill
-- Rename "Memory Bank" to "内容库" / "My Library"
-- Update header and dashboard navigation
+rename: Library to My

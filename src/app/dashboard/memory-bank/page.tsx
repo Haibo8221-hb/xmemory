@@ -54,7 +54,7 @@ export default function MemoryBankPage() {
   
   const texts = {
     en: {
-      title: 'My Library',
+      title: 'My',
       subtitle: 'Your private AI content storage',
       addNew: 'Add Content',
       search: 'Search...',
@@ -77,7 +77,7 @@ export default function MemoryBankPage() {
       memoryCount: 'items',
     },
     zh: {
-      title: '内容库',
+      title: '我的',
       subtitle: '你的私人AI内容存储',
       addNew: '添加内容',
       search: '搜索...',
